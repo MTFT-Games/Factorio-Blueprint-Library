@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Factorio Blueprint Library</title>
+    <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/bulma@0.9.3/css/bulma.min.css">
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"
+        integrity="sha512-iBBXm8fW90+nuLcSKlbmrPcLa0OT92xO1BIsZ+ywDWZCvqsWgccV3gFoRBv0z+8dLJgyAHIhR35VZc2oM/gI1w=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="styles/factorio.css">
+    <script type="module" src="src/web-comps.js"></script>
+</head>
+
+<body class="has-background-dark has-text-light">
+    <factorio-header data-active="documentation"></factorio-header>
+
+    <factorio-panel-light><span slot="title">The API or data source your app uses</span>
+        <span slot="content">
+            I plan to use my own data to start and eventually build the ability for users to submit their own data and ill maintain a database for it on my own server. The data will consist of blueprints from the game 'Factorio', likely in their exported string or json forms that will be parsed and displayed by the app.
+        </span>
+    </factorio-panel-light>
+
+    <factorio-panel><span slot="title">The major features of the app</span>
+        <span slot="content">
+            <ul>
+                <li>User submitted content</li>
+                <li>Parsing and rendering various stats and previews of the blueprints</li>
+                <li>Search of the database by title, stats, tags, ect.</li>
+                <li>users to easily copy the exported version of the blueprints</li>
+            </ul>
+        </span>
+    </factorio-panel>
+
+    <factorio-panel-light><span slot="title">Planned interface</span>
+        <span slot="content">
+            The look will be heavily based on factorio's in game interface. Ui will likely be something like this:
+            <img src="images/ui-mock.png" alt="">
+        </span>
+    </factorio-panel-light>
+</body>
+
+</html>
