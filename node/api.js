@@ -1,6 +1,9 @@
 #!/usr/bin/env node
 "use strict"
 const http = require('http');
+const crypto = require('crypto');
+const exec = require('child_process').exec;
+
 
 const secret = process.env.GITHUB_SECRET;
 const docs = `
@@ -57,22 +60,40 @@ const docs = `
 `;
 
 const server = http.createServer((req, res) => {
+	res.setHeader('Content-Type', 'text/html');
+
 	switch (req.url) {
 		// Docs page describing functions and usage
 		case '/':
 			res.statusCode = 200;
-			res.setHeader('Content-Type', 'text/html');
 			res.end(docs);
 			break;
+
 		case '/login':
 		case '/login/verify':
 		case '/login/new':
 		case '/content/favorites':
 		case '/content/query':
-		case '/git':
 			res.statusCode = 501;
-			res.setHeader('Content-Type', 'text/html');
 			res.end(`<h1>${req.url} is not implemented yet.</h1>`);
+			break;
+
+		// Pull the git repo when github hebhook is received
+		case '/git':
+			req.on('data', (chunk) => {
+				let signature = "sha1=" + 
+					crypto.createHmac('sha1', secret).update(chunk.toString()).digest('hex');
+
+				// Check for valid signature
+				if (req.headers['x-hub-signature'] == sig) {
+					res.status(200).end();
+					exec('cd /var/www/factorio-library && git pull'); // Pull from github
+					// End the process so systemd restarts it with the new version pulled from git
+					process.kill(process.pid, 'SIGTERM'); 
+				}
+			});
+
+			res.status(200).end();
 			break;
 
 		// Anything else is not a valid endpoint
