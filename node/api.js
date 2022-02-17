@@ -85,7 +85,7 @@ const server = http.createServer((req, res) => {
 					crypto.createHmac('sha1', secret).update(chunk.toString()).digest('hex');
 
 				// Check for valid signature
-				if (req.headers['x-hub-signature'] == sig) {
+				if (req.headers['x-hub-signature'] == signature) {
 					res.statusCode = 200;
 					res.end();
 					console.log(exec('cd /var/www/factorio-library && git pull')); // Pull from github
@@ -95,7 +95,7 @@ const server = http.createServer((req, res) => {
 			});
 
 			res.statusCode = 200;
-			res.end("Git pull attempted v2.5");
+			res.end("Git pull attempted v2.4");
 			break;
 
 		// Anything else is not a valid endpoint
