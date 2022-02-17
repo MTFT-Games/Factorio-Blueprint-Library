@@ -95,7 +95,7 @@ const server = http.createServer((req, res) => {
 			});
 
 			res.statusCode = 200;
-			res.end("eom");
+			res.end("Git pull attempted");
 			break;
 
 		// Anything else is not a valid endpoint
