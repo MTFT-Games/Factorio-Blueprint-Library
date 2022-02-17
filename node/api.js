@@ -88,14 +88,14 @@ const server = http.createServer((req, res) => {
 				if (req.headers['x-hub-signature'] == sig) {
 					res.statusCode = 200;
 					res.end();
-					console.log(exec('cd /var/www/factorio-library && git pull')); // Pull from github
+					exec('cd /var/www/factorio-library && git pull'); // Pull from github
 					// End the process so systemd restarts it with the new version pulled from git
 					process.kill(process.pid, 'SIGTERM'); 
 				}
 			});
 
 			res.statusCode = 200;
-			res.end("Git pull attempted");
+			res.end("Git pull attempted v2");
 			break;
 
 		// Anything else is not a valid endpoint
