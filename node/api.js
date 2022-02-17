@@ -18,6 +18,7 @@ async function connectMongo() {
 		console.log("Connected successfully to server");
 	} finally {
 		console.log("done trying to mongo");
+		await client.close();
 	}
 }
 connectMongo().catch(console.log("Error connecting"));
@@ -133,7 +134,6 @@ server.listen(8081, () => {
 });
 
 process.on('SIGTERM', async () => {
-	await client.close();
 	server.close(() => {
 		console.log('Process terminated')
 	})
