@@ -14,7 +14,7 @@ async function connectMongo() {
 	try {
 		await client.connect();
 		// Establish and verify connection
-		console.log(await client.db("factorio-library").collection("users").find({}));
+		//console.log(await client.db("factorio-library").collection("users").find({}));
 		console.log("Connected successfully to server");
 	} finally {
 		console.log("done trying to mongo");
