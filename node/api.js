@@ -3,10 +3,17 @@
 const http = require('http');
 const crypto = require('crypto');
 const exec = require('child_process').exec;
-
+const { MongoClient } = require("mongodb");
 
 const secret = process.env.GITHUB_SECRET;
 const mongoAuth = process.env.MONGO_AUTH;
+const client = new MongoClient(`mongodb://API:${mongoAuth}@localhost`);
+
+// Connect the client to the server
+await client.connect();
+// Establish and verify connection
+await client.db("factorio-library").command({ ping: 1 });
+console.log("Connected successfully to server");
 
 const docs = `
 	<h1>Factorio Blueprint Library API Docs</h1>
@@ -67,6 +74,7 @@ const server = http.createServer((req, res) => {
 	switch (req.url) {
 		// Docs page Sdescribing functions and usage
 		case '/':
+			res.setHeader('Content-Type', 'text/html');
 			res.statusCode = 200;
 			res.end(docs);
 			break;
@@ -76,12 +84,14 @@ const server = http.createServer((req, res) => {
 		case '/login/new':
 		case '/content/favorites':
 		case '/content/query':
+			res.setHeader('Content-Type', 'text/html');
 			res.statusCode = 501;
 			res.end(`<h1>${req.url} is not implemented yet.</h1>`);
 			break;
 
 		// Pull the git repo when github hebhook is received
 		case '/git':
+			res.setHeader('Content-Type', 'text/html');
 			req.on('data', (chunk) => {
 				let signature = "sha1=" + 
 					crypto.createHmac('sha1', secret).update(chunk.toString()).digest('hex');
@@ -102,6 +112,7 @@ const server = http.createServer((req, res) => {
 
 		// Anything else is not a valid endpoint
 		default:
+			res.setHeader('Content-Type', 'text/html');
 			res.statusCode = 404;
 			res.setHeader('Content-Type', 'text/html');
 			res.end(`<h1>${req.url} is not a valid endpoint.</h1>`);
@@ -114,7 +125,8 @@ server.listen(8081, () => {
 	console.log(`Server running`);
 });
 
-process.on('SIGTERM', () => {
+process.on('SIGTERM', async () => {
+	await client.close();
 	server.close(() => {
 		console.log('Process terminated')
 	})
