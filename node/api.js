@@ -7,7 +7,7 @@ const { MongoClient } = require("mongodb");
 
 const secret = process.env.GITHUB_SECRET;
 const mongoAuth = process.env.MONGO_AUTH;
-const client = new MongoClient(`mongodb://API:${mongoAuth}@localhost`);
+const client = new MongoClient(`mongodb://API:${mongoAuth}@localhost/factorio-library`);
 
 // Connect the client to the server
 async function connectMongo() {
