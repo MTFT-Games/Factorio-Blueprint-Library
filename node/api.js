@@ -21,7 +21,7 @@ async function connectMongo() {
 		await client.close();
 	}
 }
-connectMongo().catch(console.log("Error connecting"));
+connectMongo().catch( (e) => console.log("Error connecting: " + e));
 
 const docs = `
 	<h1>Factorio Blueprint Library API Docs</h1>
