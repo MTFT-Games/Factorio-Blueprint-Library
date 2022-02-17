@@ -6,6 +6,8 @@ const exec = require('child_process').exec;
 
 
 const secret = process.env.GITHUB_SECRET;
+const mongoAuth = process.env.MONGO_AUTH;
+
 const docs = `
 	<h1>Factorio Blueprint Library API Docs</h1>
 	<hr>
