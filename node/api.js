@@ -95,7 +95,7 @@ const server = http.createServer((req, res) => {
 			});
 
 			res.statusCode = 200;
-			res.end("Git pull attempted v3");
+			res.end("Git pull attempted v4");
 			break;
 
 		// Anything else is not a valid endpoint
