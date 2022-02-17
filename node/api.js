@@ -10,9 +10,9 @@ const mongoAuth = process.env.MONGO_AUTH;
 const client = new MongoClient(`mongodb://API:${mongoAuth}@localhost`);
 
 // Connect the client to the server
-await client.connect();
+client.connect();
 // Establish and verify connection
-await client.db("factorio-library").command({ ping: 1 });
+client.db("factorio-library").command({ ping: 1 });
 console.log("Connected successfully to server");
 
 const docs = `
