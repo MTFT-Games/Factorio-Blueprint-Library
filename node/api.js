@@ -117,7 +117,12 @@ const server = http.createServer((req, res) => {
 				data += chunk;
 			})
 			req.on('end', () => {
-				verify(JSON.parse(data), res);
+				try {
+					verify(JSON.parse(data), res);
+				} catch (error) {
+					console.log("Error: " + error);
+					console.log("Data: " + data);
+				}
 			})
 			break;
 
