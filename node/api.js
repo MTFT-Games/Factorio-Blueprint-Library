@@ -74,13 +74,20 @@ const docs = `
 		key and their favorite Ids.
 	</p>
   <p>Returns results, optionally favorites and login key.</p>
+
+	<h3>/content/new</h3>
+  <p>Requires login key and object to enter.</p>
+  <p>
+		Checks the user of the login key and adds the object to the database if it is formatted properly.
+	</p>
+  <p>Returns if of added object login key.</p>
+
+	<h3>maybe update and delete later</h3>
 `;
 
 const server = http.createServer((req, res) => {
-	res.setHeader('Content-Type', 'text/html');
-
 	switch (req.url) {
-		// Docs page Sdescribing functions and usage
+		// Docs page describing functions and usage
 		case '/':
 			res.setHeader('Content-Type', 'text/html');
 			res.statusCode = 200;
