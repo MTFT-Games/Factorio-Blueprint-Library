@@ -4,6 +4,13 @@ const http = require('http');
 const crypto = require('crypto');
 const exec = require('child_process').exec;
 const { MongoClient } = require("mongodb");
+const nodemailer = require('nodemailer').createTransport({
+	service: 'gmail',
+	auth: {
+		user: 'factoriolibrary@gmail.com',
+		pass: process.env.MAIL_PASS
+	}
+});
 
 const secret = process.env.GITHUB_SECRET;
 const mongoAuth = process.env.MONGO_AUTH;
@@ -31,7 +38,7 @@ const docs = `
 	<hr>
 	<h2>Login</h2>
 	<h3>/login</h3> 
-  <p>Requires a username, a bool to remember this computer, and the hashed password.</p> 
+  <p>Requires a username, a bool to remember this computer, and the password.</p> 
   <p>
 		Queries database for a user that matches the name and password. If none are 
 		found, return invalid credentials error, otherwise generates a new login key 
@@ -44,16 +51,16 @@ const docs = `
   <p>Requires a username and email.</p>
 	<p>
   	Checks if the username is used and returns an error if so, otherwise generates 
-		a random code, emails it to the provided address and returns the hash of 
-		the code for the client to check against.
+		a random code, emails it to the provided address and returns the the code 
+		for the client to check against. This should be improved in the future since this does nothing to effectively stop someone intentionally using someone elses email, it just makes sure that a normal user didn't mistype their recovery email.
   </p>
 	<p>
-		Returns the hash of the code for client to check user response against before 
+		Returns the code for client to check user response against before 
 		sending /login/new.
 	</p>
 
 	<h3>/login/new</h3> 
-  <p>Requires username, password hash, and an email.</p>
+  <p>Requires username, password, and an email.</p>
   <p>
 		Check if a matching username exists and return an error if so, otherwise 
 		crate a new user entry and generate new login key to be set and returned.
@@ -93,9 +100,22 @@ async function verify(data, res) {
 		res.statusCode = 409;
 		res.end("Username taken");
 	} else {
-		// TODO: send email and return hash
-		res.statusCode = 200;
-		res.end("Success");
+		let code = Math.floor(Math.random() * 10000);
+		nodemailer.sendMail({
+			from: 'factoriolibrary@gmail.com',
+			to: data.email,
+			subject: 'Factorio Library account confirmation',
+			text: `A Factorio Library account is being created with this email as the recovery email. If this was you, your code is ${code}. If it wasn't you, please ignore and delete this email and no account will be created without the code.`
+		}, (error, info) => {
+			if (error) {
+				console.log(error);
+				res.statusCode = 400;
+				res.end("Error sending confirmation email");
+			} else {
+				res.statusCode = 200;
+				res.end(code);
+			}
+		});
 	}
 }
 
