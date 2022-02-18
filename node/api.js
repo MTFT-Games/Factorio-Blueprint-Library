@@ -100,6 +100,7 @@ async function verify(data, res) {
 }
 
 const server = http.createServer((req, res) => {
+	res.setHeader('Access-Control-Allow-Origin', '*');
 	switch (req.url) {
 		// Docs page describing functions and usage
 		case '/':
