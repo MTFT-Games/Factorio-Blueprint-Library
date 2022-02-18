@@ -8,6 +8,8 @@ const { MongoClient } = require("mongodb");
 const secret = process.env.GITHUB_SECRET;
 const mongoAuth = process.env.MONGO_AUTH;
 const client = new MongoClient(`mongodb://API:${mongoAuth}@localhost/factorio-library`);
+let users;
+let blueprints;
 
 // Connect the client to the server
 async function connectMongo() {
@@ -16,6 +18,8 @@ async function connectMongo() {
 		// Establish and verify connection
 		console.log(await client.db("factorio-library").command({ ping: 1 }));
 		console.log("Connected successfully to server");
+		users = await client.db("factorio-library").collection("users");
+		blueprints = await client.db("factorio-library").collection("blueprints");
 	} finally {
 		console.log("done with mongo startup");
 	}
@@ -84,6 +88,17 @@ const docs = `
 	<h3>maybe update and delete later</h3>
 `;
 
+async function verify(data, res) {
+	if (await users.findOne({ username: data.username })) {
+		res.statusCode = 409;
+		res.end("Username taken");
+	} else {
+		// TODO: send email and return hash
+		res.statusCode = 200;
+		res.end("Success");
+	}
+}
+
 const server = http.createServer((req, res) => {
 	switch (req.url) {
 		// Docs page describing functions and usage
@@ -93,8 +108,19 @@ const server = http.createServer((req, res) => {
 			res.end(docs);
 			break;
 
-		case '/login':
+		// Check if a username is valid and sends an email to verify the email
 		case '/login/verify':
+			res.setHeader('Content-Type', 'text/html');
+			let data = '';
+			req.on('data', chunk => {
+				data += chunk;
+			})
+			req.on('end', () => {
+				verify(JSON.parse(data), res);
+			})
+			break;
+
+		case '/login':
 		case '/login/new':
 		case '/content/favorites':
 		case '/content/query':
