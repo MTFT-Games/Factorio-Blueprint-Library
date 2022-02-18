@@ -111,11 +111,10 @@ async function verify(data, res) {
 				console.log(error);
 				res.statusCode = 400;
 				res.end("Error sending confirmation email");
-			} else {
-				res.statusCode = 200;
-				res.end(code);
 			}
 		});
+		res.statusCode = 200;
+		res.end(code);
 	}
 }
 
