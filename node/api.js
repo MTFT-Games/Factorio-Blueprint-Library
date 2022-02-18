@@ -101,8 +101,6 @@ async function verify(data, res) {
 		res.end("Username taken");
 	} else {
 		let code = Math.floor(Math.random() * 10000);
-		res.statusCode = 200;
-		res.end(code);
 		nodemailer.sendMail({
 			from: 'factoriolibrary@gmail.com',
 			to: data.email,
@@ -111,6 +109,11 @@ async function verify(data, res) {
 		}, (error, info) => {
 			if (error) {
 				console.log(error);
+				res.statusCode = 400;
+				res.end("Error sending confirmation email");
+			} else {
+				res.statusCode = 200;
+				res.end(`${code}`);
 			}
 		});
 	}
