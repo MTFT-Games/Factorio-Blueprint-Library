@@ -14,14 +14,13 @@ async function connectMongo() {
 	try {
 		await client.connect();
 		// Establish and verify connection
-		//console.log(await client.db("factorio-library").collection("users").find({}));
+		console.log(await client.db("factorio-library").command({ ping: 1 }));
 		console.log("Connected successfully to server");
 	} finally {
-		console.log("done trying to mongo");
-		await client.close();
+		console.log("done with mongo startup");
 	}
 }
-connectMongo().catch( (e) => console.log("Error connecting: " + e));
+connectMongo().catch((e) => console.log("Error connecting: " + e));
 
 const docs = `
 	<h1>Factorio Blueprint Library API Docs</h1>
@@ -101,7 +100,7 @@ const server = http.createServer((req, res) => {
 		case '/git':
 			res.setHeader('Content-Type', 'text/html');
 			req.on('data', (chunk) => {
-				let signature = "sha1=" + 
+				let signature = "sha1=" +
 					crypto.createHmac('sha1', secret).update(chunk.toString()).digest('hex');
 
 				// Check for valid signature
@@ -110,7 +109,7 @@ const server = http.createServer((req, res) => {
 					res.end();
 					exec('cd /var/www/factorio-library && git pull'); // Pull from github
 					// End the process so systemd restarts it with the new version pulled from git
-					process.kill(process.pid, 'SIGTERM'); 
+					process.kill(process.pid, 'SIGTERM');
 				}
 			});
 
@@ -134,6 +133,7 @@ server.listen(8081, () => {
 });
 
 process.on('SIGTERM', async () => {
+	await client.close();
 	server.close(() => {
 		console.log('Process terminated')
 	})
