@@ -95,6 +95,7 @@ const docs = `
 	<h3>maybe update and delete later</h3>
 `;
 
+// Async function to check if a username is valid and send an email to verify the email
 async function verify(data, res) {
 	if (await users.findOne({ username: data.username })) {
 		res.statusCode = 409;
@@ -146,8 +147,24 @@ const server = http.createServer((req, res) => {
 			})
 			break;
 
-		case '/login':
+		// Double checks username validity and creates a new user, returning a login key. 
 		case '/login/new':
+			res.setHeader('Content-Type', 'text/html');
+			let data = '';
+			req.on('data', chunk => {
+				data += chunk;
+			})
+			req.on('end', () => {
+				try {
+					createUser(JSON.parse(data), res);
+				} catch (error) {
+					console.log("Error: " + error);
+					console.log("Data: " + data);
+				}
+			})
+			break;
+
+		case '/login':
 		case '/content/favorites':
 		case '/content/query':
 			res.setHeader('Content-Type', 'text/html');
