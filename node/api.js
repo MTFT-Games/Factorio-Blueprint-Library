@@ -131,7 +131,7 @@ const server = http.createServer((req, res) => {
 			break;
 
 		// Check if a username is valid and sends an email to verify the email
-		case '/login/verify':
+		case '/login/verify': {
 			res.setHeader('Content-Type', 'text/html');
 			let data = '';
 			req.on('data', chunk => {
@@ -146,9 +146,9 @@ const server = http.createServer((req, res) => {
 				}
 			})
 			break;
-
+		}
 		// Double checks username validity and creates a new user, returning a login key. 
-		case '/login/new':
+		case '/login/new': {
 			res.setHeader('Content-Type', 'text/html');
 			let data = '';
 			req.on('data', chunk => {
@@ -163,7 +163,7 @@ const server = http.createServer((req, res) => {
 				}
 			})
 			break;
-
+		}
 		case '/login':
 		case '/content/favorites':
 		case '/content/query':
