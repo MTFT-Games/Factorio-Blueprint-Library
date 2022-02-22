@@ -162,7 +162,7 @@ async function login(data, res) {
 }
 
 async function addEntry(data, res) {
-	user = await users.findOne({ login: data.login });
+	const user = await users.findOne({ login: data.login });
 	// auth
 	if (user.username && user.login.expires > Date.now()) {
 		//check that the client formatted it properly
