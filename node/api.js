@@ -268,10 +268,15 @@ const server = http.createServer((req, res) => {
 					let json = JSON.parse(data);
 					if (json.login && json.content) {
 						addEntry(json, res);
+					} else {
+						res.statusCode = 500;
+						res.end("malformed data");
 					}
 				} catch (error) {
 					console.log("Error: " + error);
 					console.log("Data: " + data);
+					res.statusCode = 500;
+					res.end("caught exception");
 				}
 			})
 			break;
