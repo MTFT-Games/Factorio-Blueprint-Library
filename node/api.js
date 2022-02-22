@@ -128,6 +128,12 @@ async function createUser(data, res) {
 		res.statusCode = 409;
 		res.end("Username taken");
 	} else {
+		const requestTime = Date.now();
+		const generatedLogin = { key: "", expires: requestTime + 1200000 };
+		const payload = JSON.stringify({ username: data.username, iat: requestTime });
+		const signature = crypto.createHmac('sha256', secret).update(base64url(payload)).digest('hex');
+		const token = base64url(payload) + "." + base64url(signature);
+		generatedLogin.key = token;
 		let passHash = "NA";
 		bcrypt.genSalt(10, function (saltError, salt) {
 			if (saltError) {
@@ -138,19 +144,13 @@ async function createUser(data, res) {
 						throw hashError;
 					} else {
 						passHash = hash;
+						await users.insertOne({ username: data.username, password: passHash, email: data.email, login: generatedLogin, favorites: [] });
+						res.statusCode = 200;
+						res.end(token);
 					}
 				})
 			}
 		});
-		const requestTime = Date.now();
-		const generatedLogin = { key: "", expires: requestTime + 1200000 };
-		const payload = JSON.stringify({ username: data.username, iat: requestTime });
-		const signature = crypto.createHmac('sha256', secret).update(base64url(payload)).digest('hex');
-		const token = base64url(payload) + "." + base64url(signature);
-		generatedLogin.key = token;
-		await users.insertOne({ username: data.username, password: passHash, email: data.email, login: generatedLogin, favorites: [] });
-		res.statusCode = 200;
-		res.end(token);
 	}
 }
 
