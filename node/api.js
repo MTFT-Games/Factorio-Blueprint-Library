@@ -279,7 +279,7 @@ process.on('SIGTERM', async () => {
 
 function generateToken(data) {
 	const requestTime = Date.now();
-	const generatedLogin = { key: "", expires: requestTime + 1200000 };
+	const generatedLogin = { key: "", expires: requestTime + 600000 };
 	const payload = JSON.stringify({ username: data.username, iat: requestTime });
 	const signature = crypto.createHmac('sha256', secret).update(base64url(payload)).digest('hex');
 	const token = base64url(payload) + "." + base64url(signature);
