@@ -162,23 +162,23 @@ async function login(data, res) {
 }
 
 async function addEntry(data, res) {
-	user = await users.findOne({login: data.login});
+	user = await users.findOne({ login: data.login });
 	// auth
 	if (user.username && user.login.expires > Date.now()) {
 		//check that the client formatted it properly
-		if (data.content.author == user.username && 
-			data.content.favorites == 0 && 
+		if (data.content.author == user.username &&
+			data.content.favorites == 0 &&
 			(data.content.type == "book" || data.content.type == "blueprint") &&
-			data.content.content && 
+			data.content.content &&
 			data.content.exportString) {
-				const result = await blueprints.insertOne(data.content);
-				if (result.insertedId) {
-					res.statusCode = 200;
-					res.end(result.insertedId);
-				} else {
-					res.statusCode = 500;
-					res.end("Error adding new data");
-				}
+			const result = await blueprints.insertOne(data.content);
+			if (result.insertedId) {
+				res.statusCode = 200;
+				res.end(result.insertedId);
+			} else {
+				res.statusCode = 500;
+				res.end("Error adding new data");
+			}
 		} else {
 			res.statusCode = 400;
 			res.end("Badly formatted data");
@@ -266,7 +266,7 @@ const server = http.createServer((req, res) => {
 			req.on('end', () => {
 				try {
 					let json = JSON.parse(data);
-					if (json.username && json.password) {
+					if (json.login && json.content) {
 						addEntry(json, res);
 					}
 				} catch (error) {
