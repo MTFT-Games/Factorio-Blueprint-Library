@@ -132,7 +132,7 @@ async function createUser(data, res) {
 		const generatedLogin = generateToken();
 		await users.insertOne({ username: data.username, password: await passHash, email: data.email, login: generatedLogin, favorites: [] });
 		res.statusCode = 200;
-		res.end(generatedLogin);
+		res.end(JSON.stringify(generatedLogin));
 	}
 }
 
@@ -150,7 +150,7 @@ async function login(data, res) {
 
 			// return
 			res.statusCode = 200;
-			res.end(token);
+			res.end(JSON.stringify(token));
 		} else {
 			res.statusCode = 401;
 			res.end("Invalid username or password");
