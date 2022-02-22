@@ -164,7 +164,7 @@ async function login(data, res) {
 async function addEntry(data, res) {
 	const user = await users.findOne({ login: data.login });
 	// auth
-	if (user.username && user.login.expires > Date.now()) {
+	if (user && user.login.expires > Date.now()) {
 		//check that the client formatted it properly
 		if (data.content.author == user.username &&
 			data.content.favorites == 0 &&
