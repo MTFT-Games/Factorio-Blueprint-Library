@@ -139,7 +139,7 @@ async function createUser(data, res) {
 			if (saltError) {
 				throw saltError;
 			} else {
-				bcrypt.hash(data.password, salt, function (hashError, hash) {
+				bcrypt.hash(data.password, salt, async function (hashError, hash) {
 					if (hashError) {
 						throw hashError;
 					} else {
