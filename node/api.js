@@ -161,6 +161,34 @@ async function login(data, res) {
 	}
 }
 
+async function addEntry(data, res) {
+	user = await users.findOne({login: data.login});
+	// auth
+	if (user.username && user.login.expires > Date.now()) {
+		//check that the client formatted it properly
+		if (data.content.author == user.username && 
+			data.content.favorites == 0 && 
+			(data.content.type == "book" || data.content.type == "blueprint") &&
+			data.content.content && 
+			data.content.exportString) {
+				const result = await blueprints.insertOne(data.content);
+				if (result.insertedId) {
+					res.statusCode = 200;
+					res.end(result.insertedId);
+				} else {
+					res.statusCode = 500;
+					res.end("Error adding new data");
+				}
+		} else {
+			res.statusCode = 400;
+			res.end("Badly formatted data");
+		}
+	} else {
+		res.statusCode = 401;
+		res.end("Invalid or expired login key");
+	}
+}
+
 const server = http.createServer((req, res) => {
 	res.setHeader('Access-Control-Allow-Origin', '*');
 	switch (req.url) {
@@ -220,6 +248,26 @@ const server = http.createServer((req, res) => {
 					let json = JSON.parse(data);
 					if (json.username && json.password) {
 						login(json, res);
+					}
+				} catch (error) {
+					console.log("Error: " + error);
+					console.log("Data: " + data);
+				}
+			})
+			break;
+		}
+		// Checks the user of the login key and adds the object to the database if it is formatted properly.
+		case '/content/new': {
+			res.setHeader('Content-Type', 'text/html');
+			let data = '';
+			req.on('data', chunk => {
+				data += chunk;
+			})
+			req.on('end', () => {
+				try {
+					let json = JSON.parse(data);
+					if (json.username && json.password) {
+						addEntry(json, res);
 					}
 				} catch (error) {
 					console.log("Error: " + error);
