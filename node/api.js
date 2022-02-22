@@ -128,7 +128,7 @@ async function createUser(data, res) {
 		res.statusCode = 409;
 		res.end("Username taken");
 	} else {
-		const passHash = "NA";
+		let passHash = "NA";
 		bcrypt.genSalt(10, function (saltError, salt) {
 			if (saltError) {
 				throw saltError;
