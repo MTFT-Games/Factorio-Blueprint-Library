@@ -266,7 +266,7 @@ const server = http.createServer((req, res) => {
 			req.on('end', () => {
 				try {
 					let json = JSON.parse(data);
-					if (json.login != null && json.content != null) {
+					if (json.login && json.content) {
 						addEntry(json, res);
 					} else {
 						res.statusCode = 500;
