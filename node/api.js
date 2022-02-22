@@ -129,15 +129,35 @@ async function createUser(data, res) {
 		res.end("Username taken");
 	} else {
 		let passHash = bcrypt.hash(data.password, 10);
-		const requestTime = Date.now();
-		const generatedLogin = { key: "", expires: requestTime + 1200000 };
-		const payload = JSON.stringify({ username: data.username, iat: requestTime });
-		const signature = crypto.createHmac('sha256', secret).update(base64url(payload)).digest('hex');
-		const token = base64url(payload) + "." + base64url(signature);
-		generatedLogin.key = token;
+		const generatedLogin = generateToken();
 		await users.insertOne({ username: data.username, password: await passHash, email: data.email, login: generatedLogin, favorites: [] });
 		res.statusCode = 200;
-		res.end(token);
+		res.end(generatedLogin);
+	}
+}
+
+async function login(data, res) {
+	// Check username
+	const user = await users.findOne({ username: data.username });
+	if (user) {
+		// Check password
+		if (await bcrypt.compare(data.password, user.password)) {
+			// Generate token
+			const token = generateToken(data);
+
+			// Set token in db
+			await users.updateOne({ username: data.username }, { $set: { login: token } });
+
+			// return
+			res.statusCode = 200;
+			res.end(token);
+		} else {
+			res.statusCode = 401;
+			res.end("Invalid username or password");
+		}
+	} else {
+		res.statusCode = 401;
+		res.end("Invalid username or password");
 	}
 }
 
@@ -170,7 +190,7 @@ const server = http.createServer((req, res) => {
 		}
 		// Double checks username validity and creates a new user, returning a login key. 
 		case '/login/new': {
-			res.setHeader('Content-Type', 'text/html');
+			res.setHeader('Content-Type', 'application/json');
 			let data = '';
 			req.on('data', chunk => {
 				data += chunk;
@@ -188,16 +208,35 @@ const server = http.createServer((req, res) => {
 			})
 			break;
 		}
-		case '/login':
+		// Checks useername and password hash and returns a login key.
+		case '/login': {
+			res.setHeader('Content-Type', 'application/json');
+			let data = '';
+			req.on('data', chunk => {
+				data += chunk;
+			})
+			req.on('end', () => {
+				try {
+					let json = JSON.parse(data);
+					if (json.username && json.password) {
+						login(json, res);
+					}
+				} catch (error) {
+					console.log("Error: " + error);
+					console.log("Data: " + data);
+				}
+			})
+			break;
+		}
 		case '/content/favorites':
-		case '/content/query':
+		case '/content/query': {
 			res.setHeader('Content-Type', 'text/html');
 			res.statusCode = 501;
 			res.end(`<h1>${req.url} is not implemented yet.</h1>`);
 			break;
-
+		}
 		// Pull the git repo when github hebhook is received
-		case '/git':
+		case '/git': {
 			res.setHeader('Content-Type', 'text/html');
 			req.on('data', (chunk) => {
 				let signature = "sha1=" +
@@ -216,7 +255,7 @@ const server = http.createServer((req, res) => {
 			res.statusCode = 200;
 			res.end("Git pull attempted v4");
 			break;
-
+		}
 		// Anything else is not a valid endpoint
 		default:
 			res.setHeader('Content-Type', 'text/html');
@@ -237,3 +276,14 @@ process.on('SIGTERM', async () => {
 		console.log('Process terminated')
 	})
 })
+
+function generateToken(data) {
+	const requestTime = Date.now();
+	const generatedLogin = { key: "", expires: requestTime + 1200000 };
+	const payload = JSON.stringify({ username: data.username, iat: requestTime });
+	const signature = crypto.createHmac('sha256', secret).update(base64url(payload)).digest('hex');
+	const token = base64url(payload) + "." + base64url(signature);
+	generatedLogin.key = token;
+
+	return generatedLogin;
+}
