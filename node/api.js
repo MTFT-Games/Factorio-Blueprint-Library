@@ -11,6 +11,8 @@ const nodemailer = require('nodemailer').createTransport({
 		pass: process.env.MAIL_PASS
 	}
 });
+const bcrypt = require("bcryptjs");
+const base64url = require('base64url');
 
 const secret = process.env.GITHUB_SECRET;
 const mongoAuth = process.env.MONGO_AUTH;
@@ -120,6 +122,38 @@ async function verify(data, res) {
 	}
 }
 
+// Async function to confirm a free user and create a new account
+async function createUser(data, res) {
+	if (await users.findOne({ username: data.username })) {
+		res.statusCode = 409;
+		res.end("Username taken");
+	} else {
+		const passHash = "NA";
+		bcrypt.genSalt(10, function (saltError, salt) {
+			if (saltError) {
+				throw saltError;
+			} else {
+				bcrypt.hash(data.password, salt, function (hashError, hash) {
+					if (hashError) {
+						throw hashError;
+					} else {
+						passHash = hash;
+					}
+				})
+			}
+		});
+		const requestTime = Date.now();
+		const generatedLogin = { key: "", expires: requestTime + 1200000 };
+		const payload = { username: data.username, iat: requestTime };
+		const signature = crypto.createHmac('sha256', secret).update(base64url(payload)).digest('hex');
+		const token = base64url(payload) + "." + base64url(signature);
+		generatedLogin.key = token;
+		await users.insertOne({ username: data.username, password: passHash, email: data.email, login: generatedLogin, favorites: [] });
+		res.statusCode = 200;
+		res.end(token);
+	}
+}
+
 const server = http.createServer((req, res) => {
 	res.setHeader('Access-Control-Allow-Origin', '*');
 	switch (req.url) {
@@ -156,7 +190,10 @@ const server = http.createServer((req, res) => {
 			})
 			req.on('end', () => {
 				try {
-					createUser(JSON.parse(data), res);
+					let json = JSON.parse(data);
+					if (json.username && json.password && json.email) {
+						createUser(json, res);
+					}
 				} catch (error) {
 					console.log("Error: " + error);
 					console.log("Data: " + data);
@@ -201,7 +238,6 @@ const server = http.createServer((req, res) => {
 			res.end(`<h1>${req.url} is not a valid endpoint.</h1>`);
 			break;
 	}
-	// Do stuff
 });
 
 server.listen(8081, () => {
