@@ -189,6 +189,43 @@ async function addEntry(data, res) {
 	}
 }
 
+async function contentQuery(data, res) {
+	let output = {};
+
+	// Check login and get favorites
+	if (data.login) {
+		const user = await users.findOne({ login: data.login });
+		if (user) {
+			output.favorites = user.favorites;
+
+			const token = generateToken(data);
+
+			// Set token in db
+			await users.updateOne({ login: data.login }, { $set: { login: token } });
+			output.login = token;
+		} else {
+			output.favorites = "Invalid login";
+		}
+	} else {
+		output.favorites = "Not logged in";
+	}
+
+	let filter = {};
+	let sort = { favorites: -1 };
+
+	if (data.filter) {
+		filter = data.filter;
+	}
+
+	if (data.sort) {
+		sort = data.sort;
+	}
+
+	output.content = await blueprints.find(filter, sort).toArray();
+	res.statusCode = 200;
+	res.end(JSON.stringify(output));
+}
+
 const server = http.createServer((req, res) => {
 	res.setHeader('Access-Control-Allow-Origin', '*');
 	switch (req.url) {
@@ -258,7 +295,7 @@ const server = http.createServer((req, res) => {
 		}
 		// Checks the user of the login key and adds the object to the database if it is formatted properly.
 		case '/content/new': {
-			res.setHeader('Content-Type', 'text/html');
+			res.setHeader('Content-Type', 'application/json');
 			let data = '';
 			req.on('data', chunk => {
 				data += chunk;
@@ -281,8 +318,30 @@ const server = http.createServer((req, res) => {
 			})
 			break;
 		}
-		case '/content/favorites':
 		case '/content/query': {
+			let data = '';
+			req.on('data', chunk => {
+				data += chunk;
+			})
+			req.on('end', () => {
+				try {
+					let json = JSON.parse(data);
+					if (json.limit) {
+						contentQuery(json, res);
+					} else {
+						res.statusCode = 500;
+						res.end("malformed data");
+					}
+				} catch (error) {
+					console.log("Error: " + error);
+					console.log("Data: " + data);
+					res.statusCode = 500;
+					res.end("caught exception");
+				}
+			})
+			break;
+		}
+		case '/content/favorites': {
 			res.setHeader('Content-Type', 'text/html');
 			res.statusCode = 501;
 			res.end(`<h1>${req.url} is not implemented yet.</h1>`);
