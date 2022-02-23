@@ -228,6 +228,14 @@ async function contentQuery(data, res) {
 
 const server = http.createServer((req, res) => {
 	res.setHeader('Access-Control-Allow-Origin', '*');
+
+	// handle cors preflights from fetch
+	if (req.method == 'OPTIONS') {
+		res.statusCode = 200;
+		res.end();
+		return;
+	}
+
 	switch (req.url) {
 		// Docs page describing functions and usage
 		case '/':
