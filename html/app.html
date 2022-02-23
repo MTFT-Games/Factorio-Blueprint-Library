@@ -13,13 +13,16 @@
         integrity="sha512-iBBXm8fW90+nuLcSKlbmrPcLa0OT92xO1BIsZ+ywDWZCvqsWgccV3gFoRBv0z+8dLJgyAHIhR35VZc2oM/gI1w=="
         crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link rel="stylesheet" href="styles/factorio.css">
-    <script type="module" src="src/factorio-header.js"></script>
+    <script type="module" src="src/app.js"></script>
 </head>
 
 <body class="has-background-dark has-text-light">
     <!-- Navbar  -->
     <factorio-header data-active="app"></factorio-header>
-    "no specific content is required, but some placeholder text or UI would be nice" and i am kinda out of time so im going with option A: no placeholder ui
+    <factorio-panel-light><span slot="title"><button class="button is-primary" id="search-btn">Search</button><input type="text" class="input inline mx-2" placeholder="Search by name..." id="search"><input type="number" id="search-limit" class="input inline" placeholder="limit"></span>
+        <span slot="content" id="output">
+            Results go here.
+        </span></factorio-panel-light>
 </body>
 
 </html>

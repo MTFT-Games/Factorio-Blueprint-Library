@@ -95,6 +95,7 @@ const docs = `
   <p>Returns if of added object login key.</p>
 
 	<h3>maybe update and delete later</h3>
+	<h3>todo: add to favorites</h3>
 `;
 
 // Async function to check if a username is valid and send an email to verify the email
