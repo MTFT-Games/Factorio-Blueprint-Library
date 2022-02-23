@@ -174,7 +174,7 @@ async function addEntry(data, res) {
 			const result = await blueprints.insertOne(data.content);
 			if (result.insertedId) {
 				res.statusCode = 200;
-				res.end(result.insertedId);
+				res.end(json.stringify(result.insertedId));
 			} else {
 				res.statusCode = 500;
 				res.end("Error adding new data");
