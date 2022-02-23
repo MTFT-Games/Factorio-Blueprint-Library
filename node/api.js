@@ -233,6 +233,7 @@ const server = http.createServer((req, res) => {
 	if (req.method == 'OPTIONS' && req.headers['access-control-request-method']) {
 		res.statusCode = 204;
 		res.setHeader('Access-Control-Allow-Methods', 'POST');
+		res.setHeader('Access-Control-Allow-Headers', 'content-type');
 		res.end();
 		return;
 	}
