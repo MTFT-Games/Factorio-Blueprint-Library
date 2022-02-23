@@ -221,7 +221,7 @@ async function contentQuery(data, res) {
 		sort = data.sort;
 	}
 
-	output.content = await blueprints.find(filter, sort).toArray();
+	output.content = await blueprints.find(filter, sort).limit(data.limit).toArray();
 	res.statusCode = 200;
 	res.end(JSON.stringify(output));
 }
