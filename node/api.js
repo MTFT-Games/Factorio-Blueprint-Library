@@ -214,11 +214,12 @@ async function contentQuery(data, res) {
 	let filter = {};
 	let sort = { favorites: -1 };
 
-	if (data.filter) {
+	// May want to return errors instead of quietly failing
+	if (typeof data.filter === 'object' && !Array.isArray(data.filter) && data.filter !== null) {
 		filter = data.filter;
 	}
 
-	if (data.sort) {
+	if (typeof data.sort === 'object' && !Array.isArray(data.sort) && data.sort !== null) {
 		sort = data.sort;
 	}
 
