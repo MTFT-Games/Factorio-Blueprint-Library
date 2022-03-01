@@ -79,4 +79,4 @@ class FactorioCard extends HTMLElement {
     // TODO: ADD HOVER
 }
 
-customElements.define('my-list', MyList);
+customElements.define('factorio-card', FactorioCard);
