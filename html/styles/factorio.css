@@ -24,3 +24,7 @@ html {
 .inline{
     display: inline;
 }
+
+#output {
+    display: flex;
+}

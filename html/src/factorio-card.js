@@ -16,8 +16,8 @@ template.innerHTML = `
     background-color: #414040;
 }
 </style>
-<div class="fpanel p-2 m-3">
-	<span class="title"></span>
+<div class="fpanel m-3">
+	<span class="title p-2"></span>
 	<div class="panel-inset panel-inset-lighter mt-2 p-2 has-text-light">
 	</div>
 </div>
@@ -28,7 +28,7 @@ class FactorioCard extends HTMLElement {
         super();
         this.attachShadow({ mode: "open" });
         this.shadowRoot.appendChild(template.content.cloneNode(true));
-        this.title = this.shadowRoot.querySelector("span.title");
+        this.span = this.shadowRoot.querySelector("span.title");
         this.div = this.shadowRoot.querySelector("div");
     }
 
@@ -40,9 +40,9 @@ class FactorioCard extends HTMLElement {
         if (this._item) {
             let type = this.item.type;
             if (this.item.content[type].label) {
-                this.title.innerHTML = this.item.content[type].label;
+                this.span.innerHTML = this.item.content[type].label;
             } else {
-                this.title.innerHTML = "Unnamed";
+                this.span.innerHTML = "Unnamed";
             }
         }
 
