@@ -16,7 +16,7 @@ async function query() {
 	let limit = 10;
 
 	if (searchBox.value) {
-		filter = { $or: [{ "content.blueprint.label": searchBox.value }, { "content.blueprint_book.label": searchBox.value }] };
+		filter = { $or: [{ "content.blueprint.label": { $regex: searchBox.value, $options: 'i' } }, { "content.blueprint_book.label": { $regex: searchBox.value, $options: 'i' } }] };
 	}
 
 	if (searchLimitBox.value) {
