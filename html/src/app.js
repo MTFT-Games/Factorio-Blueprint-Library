@@ -16,7 +16,7 @@ async function query() {
 	let limit = 10;
 
 	if (searchBox.value) {
-		filter = searchBox.value;
+		filter = { $or: [{ "content.blueprint.label": searchBox.value }, { "content.blueprint_book.label": searchBox.value }] };
 	}
 
 	if (searchLimitBox.value) {
@@ -26,7 +26,7 @@ async function query() {
 	const response = await fetch("https://factorio-library.noahemke.com/api/content/query", {
 		method: 'POST',
 		headers: { 'Content-Type': 'application/json' },
-		body: JSON.stringify({filter: filter, limit: limit})
+		body: JSON.stringify({ filter: filter, limit: limit })
 	});
 	const json = await response.json();
 	console.log(json);
