@@ -190,6 +190,53 @@ async function addEntry(data, res) {
 	}
 }
 
+async function queryFavorites(data, res) {
+	const user = await users.findOne({ login: data.login });
+	// auth
+	if (user && user.login.expires > Date.now()) {
+		let mappedFavorites = user.favorites.map((e) => ObjectId(e));
+		let output = await blueprints.find({_id: {$in: mappedFavorites}}).limit(data.limit).toArray();
+		res.statusCode = 200;
+		res.end(JSON.stringify(output));
+	} else {
+		res.statusCode = 401;
+		res.end("Invalid or expired login key");
+	}
+}
+
+async function editFavorites(data, res) {
+	const user = await users.findOne({ login: data.login });
+	// auth
+	if (user && user.login.expires > Date.now()) {
+		if (data.action == 'add') {
+			// check user favs and update if needed
+			if (user.favorites.includes(data.id)) {
+				res.statusCode = 200;
+				res.end();
+			}else {
+				await users.updateOne({ login: data.login}, {$pull: {favorites: data.id}});
+				await blueprints.update({_id: ObjectId(data.id)}, {$inc: {favorites: -1}});
+				res.statusCode = 200;
+				res.end();
+			}
+		} else {
+			// check user favs and update if needed
+			if (user.favorites.includes(data.id)) {
+				await users.updateOne({ login: data.login}, {$push: {favorites: data.id}});
+				await blueprints.update({_id: ObjectId(data.id)}, {$inc: {favorites: 1}});
+				res.statusCode = 200;
+				res.end();
+			}else {
+				res.statusCode = 200;
+				res.end();
+			}
+		}
+	} else {
+		res.statusCode = 401;
+		res.end("Invalid or expired login key");
+	}
+}
+
 async function contentQuery(data, res) {
 	let output = {};
 
@@ -354,9 +401,28 @@ const server = http.createServer((req, res) => {
 			break;
 		}
 		case '/content/favorites': {
-			res.setHeader('Content-Type', 'text/html');
-			res.statusCode = 501;
-			res.end(`<h1>${req.url} is not implemented yet.</h1>`);
+			let data = '';
+			req.on('data', chunk => {
+				data += chunk;
+			})
+			req.on('end', () => {
+				try {
+					let json = JSON.parse(data);
+					if (json.limit && json.login) {
+						queryFavorites(json, res);
+					} else if (json.id && json.action && json.login) {
+						editFavorites(json, res);
+					} else {
+						res.statusCode = 500;
+						res.end("malformed data");
+					}
+				} catch (error) {
+					console.log("Error: " + error);
+					console.log("Data: " + data);
+					res.statusCode = 500;
+					res.end("caught exception");
+				}
+			})
 			break;
 		}
 		// Pull the git repo when github hebhook is received
