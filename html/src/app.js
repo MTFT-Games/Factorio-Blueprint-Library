@@ -22,7 +22,7 @@ function getLocal() {
 	if (local) {
 		return local;
 	} else {
-		local = { user: "", login: null };
+		local = { user: "", login: null, favorites: [] };
 		localStorage.setItem('nre5152-p1-settings', JSON.stringify(local));
 		return local;
 	}
@@ -98,7 +98,7 @@ document.querySelector('#login-submit').onclick = async () => {
 			loggedInAccount.innerHTML = getLocal().user;
 			loginBtn.onclick = logout();
 			// TODO: set hovers
-			// refresh search
+			query();
 			uploadBtn.disabled = false;
 			uploadBtn.title = "";
 			loginForm.classList.add('hidden');
@@ -222,6 +222,15 @@ async function query() {
 	json.content.forEach(e => {
 		let card = document.createElement("factorio-card");
 		card.item = e;
+		if (json.favorites != "Not logged in") {
+			if (json.favorites.includes(e._id)) {
+				card.dataset.favorited = true;
+			}
+		} else{
+			if (getLocal().favorites.includes(e._id)) {
+				card.dataset.favorited = true;
+			}
+		}
 		output.appendChild(card);
 	});
 	searchButton.classList.toggle("is-loading");

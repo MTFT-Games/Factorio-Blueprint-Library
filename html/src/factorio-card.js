@@ -57,17 +57,43 @@ span.author {
 <div class="fpanel m-3">
 	<span class="title p-2 mb-2"></span>
 	<div class="body panel-inset panel-inset-lighter mt-1 p-2 has-text-light">
+        <img class="base-icon" src="">
+        <span class="author"></span>
+        <i class="favorite-btn fa-regular fa-bookmark"></i>
 	</div>
 </div>
 `;
 
 class FactorioCard extends HTMLElement {
+
     constructor() {
         super();
         this.attachShadow({ mode: "open" });
         this.shadowRoot.appendChild(template.content.cloneNode(true));
         this.span = this.shadowRoot.querySelector("span.title");
         this.div = this.shadowRoot.querySelector("div.body");
+        this.favBtn = this.shadowRoot.querySelector(".favorite-btn");
+        this.favBtn.onclick = () => {
+            let settings = JSON.parse(localStorage.getItem('nre5152-p1-settings'));
+            if (this.dataset.favorited == 'true') {
+                this.dataset.favorited = false;
+                if (settings.login && settings.login.expires > Date.now()) {
+                    // remove from favs in server
+                } else {
+                    settings.favorites.splice(settings.favorites.indexOf(this.dataset.id), 1);
+                    localStorage.setItem('nre5152-p1-settings', JSON.stringify(settings));
+                }
+            } else {
+                this.dataset.favorited = true;
+                if (settings.login && settings.login.expires > Date.now()) {
+                    // add to favs in server
+                } else {
+                    settings.favorites.push(this.dataset.id);
+                    localStorage.setItem('nre5152-p1-settings', JSON.stringify(settings));
+                }
+            }
+            this.render();
+        };
     }
 
     connectedCallback() {
@@ -83,11 +109,18 @@ class FactorioCard extends HTMLElement {
                 this.span.innerHTML = "Unnamed";
             }
             if (this.item.type == "blueprint") {
-                this.div.innerHTML = '<img class="base-icon" src="images/blueprint.png">';
+                this.shadowRoot.querySelector(".base-icon").src = "images/blueprint.png";
             } else {
-                this.div.innerHTML = '<img class="base-icon" src="images/book.png">';
+                this.shadowRoot.querySelector(".base-icon").src = "images/book.png";
             }
-            this.div.innerHTML += `<span class="author">${this.item.author}</span> <i class="favorite-btn fa-regular fa-bookmark"></i>`;
+            this.shadowRoot.querySelector(".author").innerHTML = this.item.author;
+            if (this.dataset.favorited == 'true') {
+                this.favBtn.classList.remove('fa-regular');
+                this.favBtn.classList.add('fa-solid');
+            } else {
+                this.favBtn.classList.add('fa-regular');
+                this.favBtn.classList.remove('fa-solid');
+            }
         }
 
         // TODO: Parse object and display useful bits

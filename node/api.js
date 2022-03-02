@@ -71,10 +71,10 @@ const docs = `
 	<hr>
 	<h2>Content</h2>
 	<h3>/content/favorites</h3>
-	<p>Requires a login key and page size.</p>
+	<p>Requires a login key and page size or id and action.</p>
 	<p>
   	Gets the favorite Ids of the user, queries for each Ids entry and returns 
-		all the entries.
+		all the entries or adds or removes a specified id from favorites.
 	</p>
   <p>Returns favorite entries.</p>
 
@@ -403,7 +403,7 @@ process.on('SIGTERM', async () => {
 
 function generateToken(data) {
 	const requestTime = Date.now();
-	const generatedLogin = { key: "", expires: requestTime + 600000 };
+	const generatedLogin = { key: "", expires: requestTime + 1200000 };
 	const payload = JSON.stringify({ username: data.username, iat: requestTime });
 	const signature = crypto.createHmac('sha256', secret).update(base64url(payload)).digest('hex');
 	const token = base64url(payload) + "." + base64url(signature);
