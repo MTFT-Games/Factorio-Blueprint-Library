@@ -55,11 +55,15 @@ if (getLocal().login && getLocal().login.expires > Date.now()) {
 	};
 }
 
+if (getLocal().user != "") {
+	document.querySelector('#username-in').value = getLocal().user;
+}
+
 if (getLocal().limit) {
 	searchLimitBox.value = getLocal().limit;
 }
 
-if (getLocal().search) {
+if (getLocal().search != null) {
 	searchBox.value = getLocal().search;
 	query();
 }
@@ -196,16 +200,15 @@ async function query() {
 
 	if (searchBox.value) {
 		filter = { $or: [{ "content.blueprint.label": { $regex: searchBox.value, $options: 'i' } }, { "content.blueprint_book.label": { $regex: searchBox.value, $options: 'i' } }] };
-		let settings = getLocal();
-		settings.search = searchBox.value;
-		localStorage.setItem('nre5152-p1-settings', JSON.stringify(settings));
 	}
+
+	let settings = getLocal();
+	settings.search = searchBox.value;
+	settings.limit = searchLimitBox.value;
+	localStorage.setItem('nre5152-p1-settings', JSON.stringify(settings));
 
 	if (searchLimitBox.value) {
 		limit = parseInt(searchLimitBox.value);
-		let settings = getLocal();
-		settings.limit = limit;
-		localStorage.setItem('nre5152-p1-settings', JSON.stringify(settings));
 	}
 
 	const response = await fetch("https://factorio-library.noahemke.com/api/content/query", {
