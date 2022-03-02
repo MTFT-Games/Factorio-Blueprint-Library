@@ -214,16 +214,16 @@ async function editFavorites(data, res) {
 				res.statusCode = 200;
 				res.end();
 			}else {
-				await users.updateOne({ login: data.login}, {$pull: {favorites: data.id}});
-				await blueprints.update({_id: ObjectId(data.id)}, {$inc: {favorites: -1}});
+				await users.updateOne({ login: data.login}, {$push: {favorites: data.id}});
+				await blueprints.update({_id: ObjectId(data.id)}, {$inc: {favorites: 1}});
 				res.statusCode = 200;
 				res.end();
 			}
 		} else {
 			// check user favs and update if needed
 			if (user.favorites.includes(data.id)) {
-				await users.updateOne({ login: data.login}, {$push: {favorites: data.id}});
-				await blueprints.update({_id: ObjectId(data.id)}, {$inc: {favorites: 1}});
+				await users.updateOne({ login: data.login}, {$pull: {favorites: data.id}});
+				await blueprints.update({_id: ObjectId(data.id)}, {$inc: {favorites: -1}});
 				res.statusCode = 200;
 				res.end();
 			}else {
