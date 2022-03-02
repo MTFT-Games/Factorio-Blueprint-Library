@@ -28,3 +28,7 @@ html {
 #output {
     display: flex;
 }
+
+.flex {
+    display: flex;
+}
