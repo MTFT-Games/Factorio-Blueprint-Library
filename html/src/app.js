@@ -190,7 +190,7 @@ async function query() {
 	}
 
 	if (searchLimitBox.value) {
-		limit = searchLimitBox.value;
+		limit = parseInt(searchLimitBox.value);
 	}
 
 	const response = await fetch("https://factorio-library.noahemke.com/api/content/query", {
