@@ -25,7 +25,8 @@
 			<input type="text" class="input inline mx-2" placeholder="Search by name..."
 				id="search">
 			<input type="number" id="search-limit" class="input inline" placeholder="limit">
-			<button class="button ml-auto is-warning" id="login-btn">
+			<button class="button" title="Must be logged in" id="upload-btn" disabled>Upload item</button>
+            <button class="button ml-auto is-warning" id="login-btn">
 				<span id="logged-in-account">Log in</span>
 				<i id="user-icon" class="ml-1 fa-solid fa-user"></i>
 			</button>
@@ -34,7 +35,7 @@
 			Results go here.
 		</span>
 	</factorio-panel-light>
-    <div id="login-form" class="hidden">
+    <div id="login-form" class="hidden popup">
         <factorio-panel-light>
             <span slot="title">Login</span>
             <div slot="content">
@@ -43,6 +44,16 @@
                 <input type="password" class="input" id="password-in" placeholder="Password">
                 <button id="login-submit" class="button is-primary">Login</button>
                 <button class="button" title="New accounts not available yet" disabled>Create account</button>
+            </div>
+        </factorio-panel-light>
+    </div>
+    <div id="upload-form" class="hidden popup">
+        <factorio-panel-light>
+            <span slot="title">Upload</span>
+            <div slot="content">
+                <p id="upload-info"></p>
+                <input type="text" class="input" id="upload-in" placeholder="Export string">
+                <button id="upload-submit" class="button is-primary">Upload</button>
             </div>
         </factorio-panel-light>
     </div>

@@ -16,13 +16,22 @@ template.innerHTML = `
     background-color: #414040;
 }
 
-.title {
-    font-size: 1.4rem;
+span.title {
+    font-size: 1.2rem;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    width: 100%;
+    height: 1.5em;
+    display: block;
+    white-space: nowrap;
+}
+
+div.fpanel {
+    width: 13em;
 }
 
 div.body {
-    box-sizing: content-box;
-    width: 10em;
+    width: 100%;
     display: grid;
     grid-template-columns: 1fr 1em;
     grid-template-rows: 1fr 1.5em;
@@ -46,7 +55,7 @@ span.author {
 }
 </style>
 <div class="fpanel m-3">
-	<span class="title p-2"></span>
+	<span class="title p-2 mb-2"></span>
 	<div class="body panel-inset panel-inset-lighter mt-1 p-2 has-text-light">
 	</div>
 </div>
