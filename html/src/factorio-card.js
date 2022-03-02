@@ -73,23 +73,41 @@ class FactorioCard extends HTMLElement {
         this.span = this.shadowRoot.querySelector("span.title");
         this.div = this.shadowRoot.querySelector("div.body");
         this.favBtn = this.shadowRoot.querySelector(".favorite-btn");
-        this.favBtn.onclick = () => {
+        this.favBtn.onclick = async () => {
             let settings = JSON.parse(localStorage.getItem('nre5152-p1-settings'));
             if (this.dataset.favorited == 'true') {
-                this.dataset.favorited = false;
                 if (settings.login && settings.login.expires > Date.now()) {
                     // remove from favs in server
+                    const response = await fetch("https://factorio-library.noahemke.com/api/content/favorites", {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ login: settings.login, action: 'remove', id: this.dataset.id })
+                    });
+
+                    if (response.ok) {
+                        this.dataset.favorited = false;
+                    }
                 } else {
                     settings.favorites.splice(settings.favorites.indexOf(this.dataset.id), 1);
                     localStorage.setItem('nre5152-p1-settings', JSON.stringify(settings));
+                    this.dataset.favorited = false;
                 }
             } else {
-                this.dataset.favorited = true;
                 if (settings.login && settings.login.expires > Date.now()) {
                     // add to favs in server
+                    const response = await fetch("https://factorio-library.noahemke.com/api/content/favorites", {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ login: settings.login, action: 'add', id: this.dataset.id })
+                    });
+
+                    if (response.ok) {
+                        this.dataset.favorited = true;
+                    }
                 } else {
                     settings.favorites.push(this.dataset.id);
                     localStorage.setItem('nre5152-p1-settings', JSON.stringify(settings));
+                    this.dataset.favorited = true;
                 }
             }
             this.render();
