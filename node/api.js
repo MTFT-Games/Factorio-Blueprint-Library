@@ -130,7 +130,7 @@ async function createUser(data, res) {
 		res.end("Username taken");
 	} else {
 		let passHash = bcrypt.hash(data.password, 10);
-		const generatedLogin = generateToken();
+		const generatedLogin = generateToken(data);
 		await users.insertOne({ username: data.username, password: await passHash, email: data.email, login: generatedLogin, favorites: [] });
 		res.statusCode = 200;
 		res.end(JSON.stringify(generatedLogin));
@@ -169,7 +169,7 @@ async function addEntry(data, res) {
 		//check that the client formatted it properly
 		if (data.content.author == user.username &&
 			data.content.favorites == 0 &&
-			(data.content.type == "book" || data.content.type == "blueprint") &&
+			(data.content.type == "blueprint_book" || data.content.type == "blueprint") &&
 			data.content.content &&
 			data.content.exportString) {
 			const result = await blueprints.insertOne(data.content);
