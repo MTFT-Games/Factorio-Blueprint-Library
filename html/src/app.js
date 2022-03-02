@@ -214,15 +214,20 @@ async function query() {
 	const response = await fetch("https://factorio-library.noahemke.com/api/content/query", {
 		method: 'POST',
 		headers: { 'Content-Type': 'application/json' },
-		body: JSON.stringify({ filter: filter, limit: limit })
+		body: JSON.stringify({ filter: filter, limit: limit, login: getLocal().login })
 	});
 	const json = await response.json();
 	console.log(json);
 	output.innerHTML = "";
+	if (json.login) {
+		settings = getLocal();
+		settings.login = json.login;
+		localStorage.setItem('nre5152-p1-settings', JSON.stringify(settings));
+	}
 	json.content.forEach(e => {
 		let card = document.createElement("factorio-card");
 		card.item = e;
-		if (json.favorites != "Not logged in") {
+		if (json.favorites != "Not logged in" && json.favorites != "Invalid login") {
 			if (json.favorites.includes(e._id)) {
 				card.dataset.favorited = true;
 			}
