@@ -191,17 +191,23 @@ async function addEntry(data, res) {
 }
 
 async function queryFavorites(data, res) {
-	const user = await users.findOne({ login: data.login });
-	// auth
-	if (user && user.login.expires > Date.now()) {
-		let mappedFavorites = user.favorites.map((e) => ObjectId(e));
-		let output = await blueprints.find({_id: {$in: mappedFavorites}}).limit(data.limit).toArray();
-		res.statusCode = 200;
-		res.end(JSON.stringify(output));
+	let mappedFavorites;
+	if (data.login) {
+		const user = await users.findOne({ login: data.login });
+		// auth
+		if (user && user.login.expires > Date.now()) {
+			mappedFavorites = user.favorites.map((e) => ObjectId(e));
+		} else {
+			res.statusCode = 401;
+			res.end("Invalid or expired login key");
+			return;
+		}
 	} else {
-		res.statusCode = 401;
-		res.end("Invalid or expired login key");
+		mappedFavorites = data.favorites.map((e) => ObjectId(e));
 	}
+	let output = await blueprints.find({_id: {$in: mappedFavorites}}).limit(data.limit).toArray();
+	res.statusCode = 200;
+	res.end(JSON.stringify(output));
 }
 
 async function editFavorites(data, res) {
@@ -408,7 +414,7 @@ const server = http.createServer((req, res) => {
 			req.on('end', () => {
 				try {
 					let json = JSON.parse(data);
-					if (json.limit && json.login) {
+					if (json.limit && (json.login || json.ids)) {
 						queryFavorites(json, res);
 					} else if (json.id && json.action && json.login) {
 						editFavorites(json, res);
