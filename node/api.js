@@ -205,7 +205,7 @@ async function queryFavorites(data, res) {
 	} else {
 		mappedFavorites = data.ids.map((e) => ObjectId(e));
 	}
-	let output = await blueprints.find({_id: {$in: mappedFavorites}}).limit(data.limit).toArray();
+	let output = await blueprints.find({ _id: { $in: mappedFavorites } }).limit(data.limit).toArray();
 	res.statusCode = 200;
 	res.end(JSON.stringify(output));
 }
@@ -219,20 +219,20 @@ async function editFavorites(data, res) {
 			if (user.favorites.includes(data.id)) {
 				res.statusCode = 200;
 				res.end();
-			}else {
-				await users.updateOne({ login: data.login}, {$push: {favorites: data.id}});
-				await blueprints.updateOne({_id: ObjectId(data.id)}, {$inc: {favorites: 1}});
+			} else {
+				await users.updateOne({ login: data.login }, { $push: { favorites: data.id } });
+				await blueprints.updateOne({ _id: ObjectId(data.id) }, { $inc: { favorites: 1 } });
 				res.statusCode = 200;
 				res.end();
 			}
 		} else {
 			// check user favs and update if needed
 			if (user.favorites.includes(data.id)) {
-				await users.updateOne({ login: data.login}, {$pull: {favorites: data.id}});
-				await blueprints.updateOne({_id: ObjectId(data.id)}, {$inc: {favorites: -1}});
+				await users.updateOne({ login: data.login }, { $pull: { favorites: data.id } });
+				await blueprints.updateOne({ _id: ObjectId(data.id) }, { $inc: { favorites: -1 } });
 				res.statusCode = 200;
 				res.end();
-			}else {
+			} else {
 				res.statusCode = 200;
 				res.end();
 			}
@@ -276,7 +276,7 @@ async function contentQuery(data, res) {
 		sort = data.sort;
 	}
 
-	output.content = await blueprints.find(filter, sort).limit(data.limit).toArray();
+	output.content = await blueprints.find(filter).sort(sort).limit(data.limit).toArray();
 	res.statusCode = 200;
 	res.end(JSON.stringify(output));
 }

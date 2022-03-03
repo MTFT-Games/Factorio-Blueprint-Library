@@ -131,7 +131,7 @@ document.querySelector('#upload-submit').onclick = async () => {
 			document.querySelector('#upload-submit').classList.remove('loading');
 			document.querySelector('#upload-in').classList.add('is-danger');
 			document.querySelector('#upload-info').innerHTML =
-					`parsing error: ${error}`;
+				`parsing error: ${error}`;
 			return;
 		}
 
@@ -231,7 +231,7 @@ async function query() {
 			if (json.favorites.includes(e._id)) {
 				card.dataset.favorited = true;
 			}
-		} else{
+		} else {
 			if (getLocal().favorites.includes(e._id)) {
 				card.dataset.favorited = true;
 			}
