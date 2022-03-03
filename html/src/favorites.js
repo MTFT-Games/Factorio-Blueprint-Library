@@ -45,8 +45,10 @@ if (getLocal().login && getLocal().login.expires > Date.now()) {
 	loggedInAccount.innerHTML = getLocal().user;
 	loginBtn.onclick = logout();
 	// TODO: set hovers
-	uploadBtn.disabled = false;
-	uploadBtn.title = "";
+	//document.querySelector('#clear-server-btn').disabled = false;
+	document.querySelector('#clear-local-btn').disabled = true;
+	document.querySelector('#clear-server-btn').title = "Not implimented";
+	document.querySelector('#clear-local-btn').title = "Must be logged out";
 } else {
 	loginBtn.onclick = () => {
 		loginForm.classList.remove('hidden');
@@ -133,9 +135,9 @@ document.querySelector('#login-submit').onclick = async () => {
 			loginBtn.onclick = logout();
 			// TODO: set hovers
 			getFavorites();
-			document.querySelector('#clear-server-btn').disabled = false;
+			//document.querySelector('#clear-server-btn').disabled = false;
 			document.querySelector('#clear-local-btn').disabled = true;
-			document.querySelector('#clear-server-btn').title = "";
+			document.querySelector('#clear-server-btn').title = "Not implimented";
 			document.querySelector('#clear-local-btn').title = "Must be logged out";
 			loginForm.classList.add('hidden');
 		} else {
