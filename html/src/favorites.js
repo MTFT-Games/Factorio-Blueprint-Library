@@ -33,6 +33,12 @@ loginForm.onclick = (e) => {
 	}
 }
 
+document.querySelector('#clear-local-btn').onclick =  () => {
+	let settings = getLocal();
+	settings.favorites = [];
+	localStorage.setItem('nre5152-p1-settings', JSON.stringify(settings));
+	getFavorites();
+};
 
 // Check if the user is already logged in
 if (getLocal().login && getLocal().login.expires > Date.now()) {
@@ -52,7 +58,7 @@ if (getLocal().user != "") {
 }
 
 if (getLocal().limit) {
-	searchLimitBox.value = getLocal().limit;
+	limitBox.value = getLocal().limit;
 }
 
 refreshBtn.onclick = () => {
