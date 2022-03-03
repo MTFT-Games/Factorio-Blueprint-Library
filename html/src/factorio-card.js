@@ -33,7 +33,7 @@ div.fpanel {
 div.body {
     width: 100%;
     display: grid;
-    grid-template-columns: 1fr 1em;
+    grid-template-columns: 1fr 4em;
     grid-template-rows: 1fr 1.5em;
 }
 
@@ -42,10 +42,14 @@ span.author {
     grid-column: 1 / 2;
 }
 
-.favorite-btn {
+#favorites {
     grid-row: 2 / 3;
     grid-column: 2 / 3;
-    line-height: 1.5em;
+		text-align: right;
+	}
+
+.favorite-btn {
+	line-height: 1.5em;
 }
 
 #icon-div {
@@ -112,127 +116,131 @@ span.author {
         <img class="mini-icon icon4" src="">
         </div>
         <span class="author"></span>
-        <i class="favorite-btn fa-regular fa-bookmark"></i>
+        <span id="favorites">
+            <span id="num-favs"></span>
+            <i class="favorite-btn fa-regular fa-bookmark"></i>
+        </span>
 	</div>
 </div>
 `;
 
 class FactorioCard extends HTMLElement {
 
-    constructor() {
-        super();
-        this.attachShadow({ mode: "open" });
-        this.shadowRoot.appendChild(template.content.cloneNode(true));
-        this.span = this.shadowRoot.querySelector("span.title");
-        this.div = this.shadowRoot.querySelector("div.body");
-        this.favBtn = this.shadowRoot.querySelector(".favorite-btn");
-        this.favBtn.onclick = async () => {
-            let settings = JSON.parse(localStorage.getItem('nre5152-p1-settings'));
-            if (this.dataset.favorited == 'true') {
-                if (settings.login && settings.login.expires > Date.now()) {
-                    // remove from favs in server
-                    const response = await fetch("https://factorio-library.noahemke.com/api/content/favorites", {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ login: settings.login, action: 'remove', id: this.dataset.id })
-                    });
+	constructor() {
+		super();
+		this.attachShadow({ mode: "open" });
+		this.shadowRoot.appendChild(template.content.cloneNode(true));
+		this.span = this.shadowRoot.querySelector("span.title");
+		this.div = this.shadowRoot.querySelector("div.body");
+		this.favBtn = this.shadowRoot.querySelector(".favorite-btn");
+		this.favBtn.onclick = async () => {
+			let settings = JSON.parse(localStorage.getItem('nre5152-p1-settings'));
+			if (this.dataset.favorited == 'true') {
+				if (settings.login && settings.login.expires > Date.now()) {
+					// remove from favs in server
+					const response = await fetch("https://factorio-library.noahemke.com/api/content/favorites", {
+						method: 'POST',
+						headers: { 'Content-Type': 'application/json' },
+						body: JSON.stringify({ login: settings.login, action: 'remove', id: this.dataset.id })
+					});
 
-                    if (response.ok) {
-                        this.dataset.favorited = false;
-                    }
-                } else {
-                    settings.favorites.splice(settings.favorites.indexOf(this.dataset.id), 1);
-                    localStorage.setItem('nre5152-p1-settings', JSON.stringify(settings));
-                    this.dataset.favorited = false;
-                }
-            } else {
-                if (settings.login && settings.login.expires > Date.now()) {
-                    // add to favs in server
-                    const response = await fetch("https://factorio-library.noahemke.com/api/content/favorites", {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ login: settings.login, action: 'add', id: this.dataset.id })
-                    });
+					if (response.ok) {
+						this.dataset.favorited = false;
+					}
+				} else {
+					settings.favorites.splice(settings.favorites.indexOf(this.dataset.id), 1);
+					localStorage.setItem('nre5152-p1-settings', JSON.stringify(settings));
+					this.dataset.favorited = false;
+				}
+			} else {
+				if (settings.login && settings.login.expires > Date.now()) {
+					// add to favs in server
+					const response = await fetch("https://factorio-library.noahemke.com/api/content/favorites", {
+						method: 'POST',
+						headers: { 'Content-Type': 'application/json' },
+						body: JSON.stringify({ login: settings.login, action: 'add', id: this.dataset.id })
+					});
 
-                    if (response.ok) {
-                        this.dataset.favorited = true;
-                    }
-                } else {
-                    settings.favorites.push(this.dataset.id);
-                    localStorage.setItem('nre5152-p1-settings', JSON.stringify(settings));
-                    this.dataset.favorited = true;
-                }
-            }
-            this.render();
-        };
-    }
+					if (response.ok) {
+						this.dataset.favorited = true;
+					}
+				} else {
+					settings.favorites.push(this.dataset.id);
+					localStorage.setItem('nre5152-p1-settings', JSON.stringify(settings));
+					this.dataset.favorited = true;
+				}
+			}
+			this.render();
+		};
+	}
 
-    connectedCallback() {
-        this.render();
-    }
+	connectedCallback() {
+		this.render();
+	}
 
-    render() {
-        if (this._item) {
-            let type = this.item.type;
-            if (this.item.content[type].label) {
-                this.span.innerHTML = this.item.content[type].label;
-            } else {
-                this.span.innerHTML = "Unnamed";
-            }
-            if (this.item.type == "blueprint") {
-                this.shadowRoot.querySelector(".base-icon").src = "images/sprites/blueprint.png";
-            } else {
-                this.shadowRoot.querySelector(".base-icon").src = "images/sprites/blueprint-book.png";
-            }
-            this.shadowRoot.querySelector(".author").innerHTML = this.item.author;
-            if (this.dataset.favorited == 'true') {
-                this.favBtn.classList.remove('fa-regular');
-                this.favBtn.classList.add('fa-solid');
-            } else {
-                this.favBtn.classList.add('fa-regular');
-                this.favBtn.classList.remove('fa-solid');
-            }
+	render() {
+		if (this._item) {
+			let type = this.item.type;
+			this.shadowRoot.querySelector('#num-favs').innerHTML = this.item.favorites;
+			if (this.item.content[type].label) {
+				this.span.innerHTML = this.item.content[type].label;
+			} else {
+				this.span.innerHTML = "Unnamed";
+			}
+			if (this.item.type == "blueprint") {
+				this.shadowRoot.querySelector(".base-icon").src = "images/sprites/blueprint.png";
+			} else {
+				this.shadowRoot.querySelector(".base-icon").src = "images/sprites/blueprint-book.png";
+			}
+			this.shadowRoot.querySelector(".author").innerHTML = this.item.author;
+			if (this.dataset.favorited == 'true') {
+				this.favBtn.classList.remove('fa-regular');
+				this.favBtn.classList.add('fa-solid');
+			} else {
+				this.favBtn.classList.add('fa-regular');
+				this.favBtn.classList.remove('fa-solid');
+			}
 
-            if (type == 'blueprint_book') {
-                this.shadowRoot.querySelector("#icon-div").classList.add('book');
-            }
+			if (type == 'blueprint_book') {
+				this.shadowRoot.querySelector("#icon-div").classList.add('book');
+			}
 
-            this.item.content[type].icons.forEach(element => {
-                this.shadowRoot.querySelector(`.icon${element.index}`).src = `images/sprites/${element.signal.name}.png`;
-            });
-        }
+			this.item.content[type].icons.forEach(element => {
+				this.shadowRoot.querySelector(`.icon${element.index}`).src = `images/sprites/${element.signal.name}.png`;
+			});
+		}
 
-        // TODO: Parse object and display useful bits
-        // set data-id to the id of the item
-        // check for a data-favorited to color the favorite button and determine action
-        // script that creates these will add favorited tags to those with a matching id in the favorites
-    }
+		// TODO: Parse object and display useful bits
+		// set data-id to the id of the item
+		// check for a data-favorited to color the favorite button and determine action
+		// script that creates these will add favorited tags to those with a matching id in the favorites
+	}
 
-    set item(val) {
-        this._item = val;
-        this.dataset.id = val._id;
-        this.render();
-    }
+	set item(val) {
+		this._item = val;
+		this.dataset.id = val._id;
+		this.render();
+	}
 
-    get item() {
-        return this._item;
-    }
+	get item() {
+		return this._item;
+	}
 
-    attributeChangedCallback(attributeName, oldVal, newVal) {
-        if (attributeName == 'data-tint') {
-            if (newVal == 'light' || !newVal) {
-                this.div.classList.add('panel-inset-lighter');
-            } else if (newVal == 'dark') {
-                this.div.classList.remove('panel-inset-lighter');
-            }
-        }
-    }
+	attributeChangedCallback(attributeName, oldVal, newVal) {
+		if (attributeName == 'data-tint') {
+			if (newVal == 'light' || !newVal) {
+				this.div.classList.add('panel-inset-lighter');
+			} else if (newVal == 'dark') {
+				this.div.classList.remove('panel-inset-lighter');
+			}
+		}
+	}
 
-    static get observedAttributes() {
-        return ["data-tint"];
-    }
+	static get observedAttributes() {
+		return ["data-tint"];
+	}
 
-    // TODO: ADD HOVER
+	// TODO: ADD HOVER
 }
 
 customElements.define('factorio-card', FactorioCard);
