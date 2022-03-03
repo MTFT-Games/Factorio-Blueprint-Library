@@ -203,7 +203,7 @@ async function queryFavorites(data, res) {
 			return;
 		}
 	} else {
-		mappedFavorites = data.favorites.map((e) => ObjectId(e));
+		mappedFavorites = data.ids.map((e) => ObjectId(e));
 	}
 	let output = await blueprints.find({_id: {$in: mappedFavorites}}).limit(data.limit).toArray();
 	res.statusCode = 200;
