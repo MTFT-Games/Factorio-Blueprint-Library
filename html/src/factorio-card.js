@@ -48,16 +48,69 @@ span.author {
     line-height: 1.5em;
 }
 
-.base-icon {
+#icon-div {
     width: 100%;
     grid-row: 1 / 2;
     grid-column: 1 / -1;
+    position: relative;
+}
+
+.mini-icon {
+    position: absolute;
+    width: 45.5%;
+}
+
+.icon1, .icon2 {
+    top: 3%;
+}
+
+.icon3, .icon4 {
+    bottom: 4%;
+}
+
+.icon1, .icon3 {
+    left: 3%;
+}
+
+.icon2, .icon4 {
+    right: 3%;
+}
+
+.book .mini-icon {
+    position: absolute;
+    width: 30.5%;
+}
+
+.book .icon1, .book .icon2 {
+    top: 10%;
+}
+
+.book .icon3, .book .icon4 {
+    bottom: 28%;
+}
+
+.book .icon1, .book .icon3 {
+    left: 19%;
+}
+
+.book .icon2, .book .icon4 {
+    right: 18%;
+}
+
+.base-icon {
+    width: 100%;
 }
 </style>
 <div class="fpanel m-3">
 	<span class="title p-2 mb-2"></span>
 	<div class="body panel-inset panel-inset-lighter mt-1 p-2 has-text-light">
+        <div id="icon-div">
         <img class="base-icon" src="">
+        <img class="mini-icon icon1" src="">
+        <img class="mini-icon icon2" src="">
+        <img class="mini-icon icon3" src="">
+        <img class="mini-icon icon4" src="">
+        </div>
         <span class="author"></span>
         <i class="favorite-btn fa-regular fa-bookmark"></i>
 	</div>
@@ -127,9 +180,9 @@ class FactorioCard extends HTMLElement {
                 this.span.innerHTML = "Unnamed";
             }
             if (this.item.type == "blueprint") {
-                this.shadowRoot.querySelector(".base-icon").src = "images/blueprint.png";
+                this.shadowRoot.querySelector(".base-icon").src = "images/sprites/blueprint.png";
             } else {
-                this.shadowRoot.querySelector(".base-icon").src = "images/book.png";
+                this.shadowRoot.querySelector(".base-icon").src = "images/sprites/blueprint-book.png";
             }
             this.shadowRoot.querySelector(".author").innerHTML = this.item.author;
             if (this.dataset.favorited == 'true') {
@@ -139,6 +192,14 @@ class FactorioCard extends HTMLElement {
                 this.favBtn.classList.add('fa-regular');
                 this.favBtn.classList.remove('fa-solid');
             }
+
+            if (type == 'blueprint_book') {
+                this.shadowRoot.querySelector("#icon-div").classList.add('book');
+            }
+
+            this.item.content[type].icons.forEach(element => {
+                this.shadowRoot.querySelector(`.icon${element.index}`).src = `images/sprites/${element.signal.name}.png`;
+            });
         }
 
         // TODO: Parse object and display useful bits
