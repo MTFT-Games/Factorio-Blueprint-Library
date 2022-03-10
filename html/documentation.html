@@ -2,46 +2,629 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Factorio Blueprint Library</title>
-    <link rel="stylesheet"
-        href="https://cdn.jsdelivr.net/npm/bulma@0.9.3/css/bulma.min.css">
-    <link rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"
-        integrity="sha512-iBBXm8fW90+nuLcSKlbmrPcLa0OT92xO1BIsZ+ywDWZCvqsWgccV3gFoRBv0z+8dLJgyAHIhR35VZc2oM/gI1w=="
-        crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <link rel="stylesheet" href="styles/factorio.css">
-    <script type="module" src="src/web-comps.js"></script>
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Factorio Blueprint Library</title>
+	<link rel="stylesheet"
+		href="https://cdn.jsdelivr.net/npm/bulma@0.9.3/css/bulma.min.css">
+	<link rel="stylesheet"
+		href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+		integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg=="
+		crossorigin="anonymous" referrerpolicy="no-referrer" />
+	<link rel="stylesheet" href="styles/factorio.css">
+	<script type="module" src="src/web-comps.js"></script>
 </head>
 
 <body class="has-background-dark has-text-light">
-    <factorio-header data-active="documentation"></factorio-header>
+	<factorio-header data-active="documentation"></factorio-header>
 
-    <factorio-panel-light><span slot="title">The API or data source your app uses</span>
-        <span slot="content">
-            I plan to use my own data to start and eventually build the ability for users to submit their own data and ill maintain a database for it on my own server. The data will consist of blueprints from the game 'Factorio', likely in their exported string or json forms that will be parsed and displayed by the app.
-        </span>
-    </factorio-panel-light>
+	<factorio-panel-light>
+		<span slot="title">Proposal</span>
+		<div slot="content">
+			<details>
+				<summary>Planned API or Data Source</summary>
+				<factorio-panel>
+					<span slot="title">Planned API</span>
+					<div slot="content">
+						I plan to use my own data to start and eventually build the
+						ability for users to submit their own data and I'll maintain a
+						database for it on my own server. The data will consist of
+						blueprints from the game 'Factorio', likely in their exported
+						string or json forms that will be parsed and displayed by the app.
+					</div>
+				</factorio-panel>
+			</details>
+			<hr>
+			<details>
+				<summary>Planned Major Features</summary>
+				<factorio-panel>
+					<span slot="title">Planned Major Features</span>
+					<div slot="content">
+						<ul>
+							<li>User submitted content</li>
+							<li>
+								Parsing and rendering various stats and previews of the blueprints
+							</li>
+							<li>Search of the database by title, stats, tags, ect.</li>
+							<li>Button to easily copy the exported version of the blueprints</li>
+						</ul>
+					</div>
+				</factorio-panel>
+			</details>
+			<hr>
+			<details>
+				<summary>UI Mockup</summary>
+				<factorio-panel>
+					<span slot="title">Planned UI</span>
+					<div slot="content">
+						<p>
+							The look will be heavily based on factorio's in game interface.
+							The UI will likely be something like this:
+						</p>
+						<img src="images/ui-mock.jpg" alt="Screenshot of a UI">
+					</div>
+				</factorio-panel>
+			</details>
+		</div>
+	</factorio-panel-light>
 
-    <factorio-panel><span slot="title">The major features of the app</span>
-        <span slot="content">
-            <ul>
-                <li>User submitted content</li>
-                <li>Parsing and rendering various stats and previews of the blueprints</li>
-                <li>Search of the database by title, stats, tags, ect.</li>
-                <li>users to easily copy the exported version of the blueprints</li>
-            </ul>
-        </span>
-    </factorio-panel>
+	<factorio-panel>
+		<span slot="title">Project Requirements</span>
+		<div slot="content">
+			<ul>
+				<li>
+					<a
+						href="https://github.com/tonethar/IGME-330-Spring-2022/blob/main/projects/p1-checkpoint-1.md">Checkpoint
+						1</a>
+				</li>
+				<li>
+					<a
+						href="https://github.com/tonethar/IGME-330-Spring-2022/blob/main/projects/p1-checkpoint-2.md">Checkpoint
+						2</a>
+				</li>
+				<li>
+					<a
+						href="https://github.com/tonethar/IGME-330-Spring-2022/blob/main/projects/p1-final.md">Final
+						Deliverable</a>
+				</li>
+			</ul>
+		</div>
+	</factorio-panel>
 
-    <factorio-panel-light><span slot="title">Planned interface</span>
-        <span slot="content">
-            The look will be heavily based on factorio's in game interface. Ui will likely be something like this:
-            <img src="images/ui-mock.png" alt="">
-        </span>
-    </factorio-panel-light>
+	<factorio-panel-light>
+		<span slot="title">Resources Utilized</span>
+		<div slot="content" class="content">
+			<ul>
+				<li>
+					<a href="https://nodejs.dev/learn">nodejs.dev/learn</a> and the various
+					topics within were used heavily when initially setting up the API on the
+					server using NodeJS.
+				</li>
+				<li>
+					The <a href="https://nodejs.org/api/http.html">Node.js documentation page</a>
+					on the http module was useful for a couple of pieces of the API.
+				</li>
+				<li>
+					This <a
+						href="https://www.digitalocean.com/community/tutorials/how-to-use-node-js-and-github-webhooks-to-keep-remote-projects-in-sync">DigitalOcean
+						tutorial</a>
+					was used to setup an api endpoint to use with a GitHub webhook and
+					automatically pull from GitHub whenever
+					<a href="https://github.com/MTFT-Games/Factorio-Blueprint-Library">the repo</a>
+					is pushed to.
+				</li>
+				<li>
+					Various pages of the
+					<a href="https://docs.mongodb.com/v4.4/">MongoDB docs</a>
+					and
+					<a href="https://docs.mongodb.com/drivers/node/current/">docs of the NodeJS
+						driver</a>
+					were instrumental in setting up the MongoDB database and parts of the
+					API that interact with it.
+				</li>
+				<li>
+					This
+					<a href="https://zellwk.com/blog/frontend-login-system/">zellwk.com blog
+						post</a>
+					was used for ideas and inspiration regarding the account and login system.
+				</li>
+				<li>
+					This
+					<a
+						href="https://coderrocketfuel.com/article/store-passwords-in-mongodb-with-node-js-mongoose-and-bcrypt">coderocketfuel.com
+						article</a>
+					was used for the specifics of hashing stored passwords in the database
+					along with a stackoverflow post that the reference to has since been
+					lost.
+				</li>
+				<li>
+					This
+					<a href="https://www.w3schools.com/nodejs/nodejs_email.asp">w3schools
+						article</a>
+					was used to setup verification emails for the /login/verify API endpoint.
+				</li>
+				<li>
+					The <a href="https://bulma.io/documentation/">Bulma docs</a> have been
+					utilized as reference for working with Bulma components and classes.
+				</li>
+				<li>
+					The
+					<a
+						href="https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch">MDN
+						web docs for Fetch</a>
+					were used for setting up fetch requests.
+				</li>
+				<li>
+					Bits and pieces of the preview of the
+					<a href="https://livebook.manning.com/book/cors-in-action/chapter-4/130">cors in
+						action</a>
+					book were used to figure out the server side of CORS compliance.
+				</li>
+				<li>
+					The <a href="https://www.factorio.com/">Factorio website</a> and the
+					<a href="https://store.steampowered.com/app/427520/Factorio/">Factorio game</a>
+					itself are used as the basis for the app's entire concept as well
+					as look and style.
+				</li>
+				<li>
+					Various <a href="https://www.w3schools.com/">w3schools</a> articles
+					as reference for various bits that weren't kept track of.
+				</li>
+				<li>
+					Various <a href="https://stackoverflow.com/">stackoverflow</a> articles
+					as reference for various bits that weren't kept track of.
+				</li>
+				<li>
+					Likely various other sources that weren't kept track of or were too
+					insignificant to remember and record.
+				</li>
+			</ul>
+		</div>
+	</factorio-panel-light>
+
+	<factorio-panel>
+		<span slot="title">API</span>
+		<div slot="content">
+			The API utilized for this project was custom built specifically for this
+			project and does not have a home page other than the app itself. It's
+			brief documentation can be found
+			<a href="https://factorio-library.noahemke.com/api">here</a> and each
+			endpoint described within is used in this webapp.
+		</div>
+	</factorio-panel>
+
+	<factorio-panel-light>
+		<span slot="title">Noteworthy</span>
+		<div slot="content" class="content">
+			<ul>
+				<li>The dataset for this app is custom and built from scratch.</li>
+				<li>The database for this project is setup in MongoDB and hosted on a personal
+					server</li>
+				<li>The API used in this project was created custom for this project in NodeJS and
+					hosted on a personal server.</li>
+				<li>The app includes a login and account system with hashed passwords</li>
+				<li>Email verification on new accounts</li>
+				<li>Cloud stored favorites along with accounts with local favorites as backup</li>
+				<li>User submitted content parsed from export string</li>
+				<li>Technologies used include:
+					<ul>
+						<li>web components</li>
+						<li>NodeJS</li>
+						<li>MongoDB</li>
+						<li>Bulma</li>
+						<li>Fetch</li>
+						<li>Cloud storage</li>
+						<li>Web services</li>
+					</ul>
+				</li>
+			</ul>
+		</div>
+	</factorio-panel-light>
+
+	<factorio-panel>
+		<span slot="title">Grading</span>
+		<div slot="content" class="content">
+			<table>
+				<thead>
+					<tr>
+						<th>Criteria</th>
+						<th>Weight/explanation</th>
+						<th>Your Score</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td><strong>A. Functionality - App &amp; Favorites Pages</strong></td>
+						<td><strong>40</strong></td>
+						<td>37.5</td>
+					</tr>
+					<tr>
+						<td>1. App Page implements all required functional requirements</td>
+						<td>
+							An API and approved data source are used. Uses Bulma classes. Results are
+							downloaded and displayed when the button is pressed. Results are displayed
+							using a card web components. Favorites button in the
+							form of a bookmark icon adds results to the favorites page.
+						</td>
+						<td><i class="fa-solid fa-check"></i></td>
+					</tr>
+					<tr>
+						<td>2. App Page saves/restores last search term and other UI <em>state</em>
+						</td>
+						<td>
+							Search term, result limit, and account login are stored in and retrieved
+							from local storage.
+						</td>
+						<td><i class="fa-solid fa-check"></i></td>
+					</tr>
+					<tr>
+						<td>3. App Page has required controls</td>
+						<td>
+							It has at least 3 controls: search button, search box, result limiter.
+						</td>
+						<td><i class="fa-solid fa-check"></i></td>
+					</tr>
+					<tr>
+						<td>4. Favorites Page uses local storage to display favorites</td>
+						<td>
+							Favorites are stored in local storage as well as the cloud
+							when logged in.
+						</td>
+						<td><i class="fa-solid fa-check"></i></td>
+					</tr>
+					<tr>
+						<td>5. Favorites Page has required "Delete Button"</td>
+						<td>
+							The favorites page has a 'Clear all local favorites' button that
+							does as it says, yet the 'Clear all cloud favorites' button is not
+							yet functional.
+						</td>
+						<td></td>
+					</tr>
+					<tr>
+						<td>- <em>Web Service does not work (App Page)</em></td>
+						<td><em>(-30)</em></td>
+						<td>-0</td>
+					</tr>
+					<tr>
+						<td>- *Does not save/restore UI state (App Page)</td>
+						<td><em>(-10)</em></td>
+						<td>-0</td>
+					</tr>
+					<tr>
+						<td>- <em>Missing required # of controls (App Page)</em></td>
+						<td><em>(-10 each)</em></td>
+						<td>-0</td>
+					</tr>
+					<tr>
+						<td>- <em>Favorites not stored in localstorage as detailed above (Favorites
+								Page)</em></td>
+						<td><em>(-15)</em></td>
+						<td>-0</td>
+					</tr>
+					<tr>
+						<td>- <em>Missing Favorites "Delete" button (Favorites Page)</em></td>
+						<td><em>(-5)</em></td>
+						<td>-2.5</td>
+					</tr>
+					<tr>
+						<td><strong>B. Content - Home &amp; Documentation Pages</strong></td>
+						<td><strong>10</strong></td>
+						<td>10</td>
+					</tr>
+					<tr>
+						<td>1. Required content is present on Home &amp; Documentation Pages</td>
+						<td>
+							The home page has a brand, the app's name, a description of what it does,
+							and a related image. Documentation page has links to the project
+							requirements, list of utilized resources, API information,
+							noteworthy features, this grading section, and a todo section.
+						</td>
+						<td><i class="fa-solid fa-check"></i></td>
+					</tr>
+					<tr>
+						<td><strong>C. Design &amp; Interaction</strong></td>
+						<td><strong>20</strong></td>
+						<td>10</td>
+					</tr>
+					<tr>
+						<td>1. Global Navigation System with "you are here" cues:</td>
+						<td>Nav bar with colored and underlined "you are here" cue</td>
+						<td><i class="fa-solid fa-check"></i></td>
+					</tr>
+					<tr>
+						<td>2. Pleasing graphic design (Bulma, mobile friendly)</td>
+						<td>
+							This is subjective but it is believed that the look and feel mimicking
+							the Factorio in game UI looks pleasing mixed with various bulma
+							styling classes.
+						</td>
+						<td><i class="fa-solid fa-check"></i></td>
+					</tr>
+					<tr>
+						<td>3. Widgets are well labeled and follow interface conventions</td>
+						<td>
+							Controls and widgets primarily use placeholder text in the field
+							as labeling which kind of works but could be improved.
+						</td>
+						<td></td>
+					</tr>
+					<tr>
+						<td>4. User errors must be handled gracefully</td>
+						<td>
+							Several errors are handled gracefully but several others
+							are still messy or experience breaking.
+						</td>
+						<td></td>
+					</tr>
+					<tr>
+						<td>5. Users must be able to figure out how to use the app with minimal
+							instruction</td>
+						<td>
+							The target user that also plays or has an understanding of
+							Factorio will likely need no explanation. An instructor or
+							grader may lack the context to quickly see the significance
+							and purpose of the app but will likely be able to figure out
+							how to use it nonetheless.
+						</td>
+						<td><i class="fa-solid fa-check"></i></td>
+					</tr>
+					<tr>
+						<td>6. The <em>state</em> the application is in is obvious</td>
+						<td>
+							Any action other than a cloud favorite that uses a network
+							request sets the activating button to a loading spinner until
+							the action is finished.
+						</td>
+						<td><i class="fa-solid fa-check"></i></td>
+					</tr>
+					<tr>
+						<td>- <em>Missing "state" cues like status text or "spinners"</em></td>
+						<td><em>(-5)</em></td>
+						<td>-0</td>
+					</tr>
+					<tr>
+						<td>- <em>Missing embedded font</em></td>
+						<td><em>(-5)</em></td>
+						<td>-5</td>
+					</tr>
+					<tr>
+						<td>- <em>Bulma not used or utilized ineffectively</em></td>
+						<td><em>(-20/-?)</em></td>
+						<td>-0</td>
+					</tr>
+					<tr>
+						<td>- <em>Interface looks "amateurish" or like GIF Finder HW</em></td>
+						<td><em>(up to -15)</em></td>
+						<td>-0</td>
+					</tr>
+					<tr>
+						<td>- <em>Widgets NOT well labeled/do not follow interface conventions</em>
+						</td>
+						<td><em>(-?)</em></td>
+						<td>-2</td>
+					</tr>
+					<tr>
+						<td>- <em>Placeholder (ex. "Bulma by Jeremy Thomas", "Ace Coder" etc) content
+								has not been removed</em></td>
+						<td><em>(-?)</em></td>
+						<td>-0</td>
+					</tr>
+					<tr>
+						<td>- <em>User errors NOT handled gracefully</em></td>
+						<td><em>(-?)</em></td>
+						<td>-3</td>
+					</tr>
+					<tr>
+						<td>- <em>App NOT intuitive to use</em></td>
+						<td><em>(-?)</em></td>
+						<td>-0</td>
+					</tr>
+					<tr>
+						<td>- <em>App state NOT obvious</em></td>
+						<td><em>(-?)</em></td>
+						<td>-0</td>
+					</tr>
+					<tr>
+						<td><strong>D. HTML/CSS/Media</strong></td>
+						<td><strong>10</strong></td>
+						<td>10 </td>
+					</tr>
+					<tr>
+						<td>1. Valid HTML</td>
+						<td>Valid</td>
+						<td><i class="fa-solid fa-check"></i></td>
+					</tr>
+					<tr>
+						<td>2. Valid CSS</td>
+						<td>Valid</td>
+						<td><i class="fa-solid fa-check"></i></td>
+					</tr>
+					<tr>
+						<td>3. Images properly optimized</td>
+						<td>Most images are cropped to 64x64 with a reasonably small file size.</td>
+						<td><i class="fa-solid fa-check"></i></td>
+					</tr>
+					<tr>
+						<td>- <em>Fails HTML Validation</em></td>
+						<td><em>(-5)</em></td>
+						<td>-0</td>
+					</tr>
+					<tr>
+						<td>- <em>Fails CSS Validation</em></td>
+						<td><em>(-5)</em></td>
+						<td>-0</td>
+					</tr>
+					<tr>
+						<td>- <em>Most CSS is NOT in an external stylesheet</em></td>
+						<td><em>(-5)</em> unless you also want web components styles in a separate
+							file</td>
+						<td>-0</td>
+					</tr>
+					<tr>
+						<td>- <em>Images larger than 100KB</em></td>
+						<td><em>(-2 each)</em></td>
+						<td>-0</td>
+					</tr>
+					<tr>
+						<td><strong>E. Code</strong></td>
+						<td></td>
+						<td></td>
+					</tr>
+					<tr>
+						<td>- <em>ES6 Module pattern not used</em></td>
+						<td><em>(-20)</em></td>
+						<td>-0</td>
+					</tr>
+					<tr>
+						<td>- <em><code>fetch()</code> not used</em></td>
+						<td><em>(-20)</em></td>
+						<td>-0</td>
+					</tr>
+					<tr>
+						<td>- <em>Code Conventions NOT followed</em></td>
+						<td><em>(-1 to -5 per incident)</em></td>
+						<td>-3 for non DRY or sloppy</td>
+					</tr>
+					<tr>
+						<td>- <em>Code shows errors in console</em></td>
+						<td><em>(-5 per incident)</em></td>
+						<td>-0</td>
+					</tr>
+					<tr>
+						<td>- <em>App does not function on banjo and/or locally</em></td>
+						<td><em>(-10 to ?)</em></td>
+						<td>-0</td>
+					</tr>
+					<tr>
+						<td>- <em>App missing required web components</em></td>
+						<td><em>(-5 each)</em></td>
+						<td>-5</td>
+					</tr>
+					<tr>
+						<td>- <em>Web component NOT in its own JS file</em></td>
+						<td><em>(-5)</em></td>
+						<td>-0</td>
+					</tr>
+					<tr>
+						<td>- <em>Web component NOT named properly</em></td>
+						<td><em>(-2)</em></td>
+						<td>-0</td>
+					</tr>
+					<tr>
+						<td><strong>F. Impact</strong></td>
+						<td><strong>20</strong></td>
+						<td>15</td>
+					</tr>
+					<tr>
+						<td>- If the app meets the requirements above, we will award a 10% in this
+							category, which means the base overall grade is 90%</td>
+						<td></td>
+						<td></td>
+					</tr>
+					<tr>
+						<td>- <em>App functionality and programming goes beyond what we did in
+								class</em></td>
+						<td><em>(+1 to +10)</em> see noteworthy section</td>
+						<td>+10</td>
+					</tr>
+					<tr>
+						<td>- <em>App UI design goes beyond what we did in class</em></td>
+						<td><em>(+1 to +10)</em></td>
+						<td></td>
+					</tr>
+					<tr>
+						<td>- <em>App is "portfolio quality" (or nearly so)</em></td>
+						<td><em>(+1 to +10)</em></td>
+						<td>+5</td>
+					</tr>
+					<tr>
+						<td><strong>Maximum Possible Total Points</strong></td>
+						<td><strong>100</strong></td>
+						<td>74.5</td>
+					</tr>
+					<tr>
+						<td><strong>Deductions</strong></td>
+						<td><strong>↓ Don't lose points for any of these! ↓</strong></td>
+						<td></td>
+					</tr>
+					<tr>
+						<td><em>Deduction if working version is not submitted to the Project 1 Final
+								dropbox on time</em></td>
+						<td><em>(-10)</em></td>
+						<td>-0</td>
+					</tr>
+					<tr>
+						<td><em>Deduction if video is not submitted to dropbox</em></td>
+						<td><em>(-10)</em></td>
+						<td>-0</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+	</factorio-panel>
+
+	<factorio-panel-light>
+		<span slot="title">To Do</span>
+		<div slot="content" class="content">
+			<ul>
+				<li>
+					Make a full name and description window show up when hovering over
+					a result
+				</li>
+				<li>
+					Make a details window when a card is clicked on with an interactive
+					render of the blueprint, export string, and analysis.
+				</li>
+				<li>
+					add login refreshing to any query that accepts a login.
+				</li>
+				<li>
+					add message if no results or favorites found
+				</li>
+				<li>
+					add clearing of cloud Favorites
+				</li>
+				<li>
+					add tooltips to all the things
+				</li>
+				<li>
+					continue factorio theming on ui elements
+				</li>
+				<li>
+					clean up the upload window
+				</li>
+				<li>
+					several bugfixes
+				</li>
+				<li>
+					more feedback on login
+				</li>
+				<li>
+					logout button
+				</li>
+				<li>
+					new user creation
+				</li>
+				<li>
+					make login a web comp
+				</li>
+				<li>
+					better labeling
+				</li>
+				<li>
+					more solid error handling
+				</li>
+				<li>
+					embedded font
+				</li>
+				<li>
+					code cleanup
+				</li>
+			</ul>
+		</div>
+	</factorio-panel-light>
 </body>
 
 </html>

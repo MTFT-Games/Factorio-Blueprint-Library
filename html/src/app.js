@@ -83,30 +83,35 @@ document.querySelector('#login-submit').onclick = async () => {
 
 	if (userIn && passIn) {
 		document.querySelector('#login-submit').classList.add('loading');
-		const response = await fetch("https://factorio-library.noahemke.com/api/login", {
-			method: 'POST',
-			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify({ username: userIn, password: passIn })
-		});
+		let response;
+		try {
+			response = await fetch("https://factorio-library.noahemke.com/api/login", {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ username: userIn, password: passIn })
+			});
 
-		if (response.ok) {
-			let localState = getLocal();
-			localState.login = await response.json();
-			localState.user = userIn;
-			localStorage.setItem('nre5152-p1-settings', JSON.stringify(localState));
+			if (response.ok) {
+				let localState = getLocal();
+				localState.login = await response.json();
+				localState.user = userIn;
+				localStorage.setItem('nre5152-p1-settings', JSON.stringify(localState));
 
-			loggedInAccount.innerHTML = getLocal().user;
-			loginBtn.onclick = logout();
-			// TODO: set hovers
-			query();
-			uploadBtn.disabled = false;
-			uploadBtn.title = "";
-			loginForm.classList.add('hidden');
-		} else {
-			document.querySelector('#login-submit').classList.remove('loading');
-			document.querySelector('#username-in').classList.add('is-danger');
-			document.querySelector('#password-in').classList.add('is-danger');
+				loggedInAccount.innerHTML = getLocal().user;
+				loginBtn.onclick = logout();
+				// TODO: set hovers
+				query();
+				uploadBtn.disabled = false;
+				uploadBtn.title = "";
+				loginForm.classList.add('hidden');
+			} else {
+				document.querySelector('#username-in').classList.add('is-danger');
+				document.querySelector('#password-in').classList.add('is-danger');
+			}
+		} catch (e) {
+
 		}
+		document.querySelector('#login-submit').classList.remove('loading');
 	}
 }
 
