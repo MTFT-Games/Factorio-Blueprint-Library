@@ -2,7 +2,7 @@
 "use strict"
 const http = require('http');
 const crypto = require('crypto');
-const exec = require('child_process').exec;
+const exec = require('child_process').execSync;
 const { MongoClient, ObjectId } = require("mongodb");
 const nodemailer = require('nodemailer').createTransport({
 	service: 'gmail',
