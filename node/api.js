@@ -471,7 +471,7 @@ process.on('SIGTERM', async () => {
 	await client.close();
 	console.log("closing http server...");
 	server.close(() => {
-		console.log('Process terminated')
+		console.log('Process terminated.')
 	})
 })
 
