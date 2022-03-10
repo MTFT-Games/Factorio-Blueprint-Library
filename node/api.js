@@ -467,7 +467,9 @@ server.listen(8081, () => {
 });
 
 process.on('SIGTERM', async () => {
+	console.log("SIGTERM received, closing MongoDB client...");
 	await client.close();
+	console.log("closing http server...");
 	server.close(() => {
 		console.log('Process terminated')
 	})
