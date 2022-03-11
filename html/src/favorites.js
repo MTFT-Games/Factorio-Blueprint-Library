@@ -33,10 +33,26 @@ loginForm.onclick = (e) => {
 	}
 }
 
-document.querySelector('#clear-local-btn').onclick =  () => {
+document.querySelector('#clear-local-btn').onclick = () => {
 	let settings = getLocal();
 	settings.favorites = [];
 	localStorage.setItem('nre5152-p1-settings', JSON.stringify(settings));
+	getFavorites();
+};
+
+document.querySelector('#clear-server-btn').onclick = async () => {
+	document.querySelector('#clear-server-btn').classList.add('loading');
+	const cards = document.querySelectorAll('factorio-card[data-favorited="true"]');
+	const promises = [];
+	// Unfavorite each card
+	for (const card of cards) {
+		promises.push(card.shadowRoot.querySelector('.favorite-btn').onclick());
+	}
+	// Make sure all cards have finished unfavoriting
+	for (const promise of promises) {
+		await promise;
+	}
+	document.querySelector('#clear-server-btn').classList.remove('loading');
 	getFavorites();
 };
 
@@ -45,9 +61,9 @@ if (getLocal().login && getLocal().login.expires > Date.now()) {
 	loggedInAccount.innerHTML = getLocal().user;
 	loginBtn.onclick = logout();
 	// TODO: set hovers
-	//document.querySelector('#clear-server-btn').disabled = false;
+	document.querySelector('#clear-server-btn').disabled = false;
 	document.querySelector('#clear-local-btn').disabled = true;
-	document.querySelector('#clear-server-btn').title = "Not implimented";
+	document.querySelector('#clear-server-btn').title = "";
 	document.querySelector('#clear-local-btn').title = "Must be logged out";
 } else {
 	loginBtn.onclick = () => {
@@ -135,9 +151,9 @@ document.querySelector('#login-submit').onclick = async () => {
 			loginBtn.onclick = logout();
 			// TODO: set hovers
 			getFavorites();
-			//document.querySelector('#clear-server-btn').disabled = false;
+			document.querySelector('#clear-server-btn').disabled = false;
 			document.querySelector('#clear-local-btn').disabled = true;
-			document.querySelector('#clear-server-btn').title = "Not implimented";
+			document.querySelector('#clear-server-btn').title = "";
 			document.querySelector('#clear-local-btn').title = "Must be logged out";
 			loginForm.classList.add('hidden');
 		} else {
