@@ -32,28 +32,12 @@
 			<input type="number" id="search-limit" class="input inline" placeholder="limit">
 			<button class="button" title="Must be logged in" id="upload-btn" disabled>Upload
 				item</button>
-			<button class="button ml-auto is-warning" id="login-btn">
-				<span id="logged-in-account">Log in</span>
-				<i id="user-icon" class="ml-1 fa-solid fa-user"></i>
-			</button>
+			<app-login></app-login>
 		</span>
 		<span slot="content" id="output">
 			Results go here. Search with an empty query for all items.
 		</span>
 	</factorio-panel-light>
-	<div id="login-form" class="hidden popup">
-		<factorio-panel-light>
-			<span slot="title">Login</span>
-			<div slot="content">
-				<p>Note: Please don't reuse your bank login, I'm not a security expert...</p>
-				<input type="text" class="input" id="username-in" placeholder="Username">
-				<input type="password" class="input" id="password-in" placeholder="Password">
-				<button id="login-submit" class="button is-primary">Login</button>
-				<button class="button" title="New accounts not available yet" disabled>Create
-					account</button>
-			</div>
-		</factorio-panel-light>
-	</div>
 	<div id="upload-form" class="hidden popup">
 		<factorio-panel-light>
 			<span slot="title">Upload</span>

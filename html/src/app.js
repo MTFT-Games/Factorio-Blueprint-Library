@@ -2,6 +2,8 @@ import "./factorio-header.js";
 import "./factorio-panel.js";
 import "./factorio-panel-light.js";
 import "./factorio-card.js";
+import "./app-login.js";
+import { getLocal } from "./utils.js";
 import "https://cdnjs.cloudflare.com/ajax/libs/pako/1.0.6/pako.js";
 
 
@@ -10,30 +12,10 @@ const searchButton = document.querySelector("#search-btn");
 const searchBox = document.querySelector("#search");
 const searchLimitBox = document.querySelector("#search-limit");
 const output = document.querySelector("#output");
-const loginBtn = document.querySelector('#login-btn');
-const loggedInAccount = document.querySelector('#logged-in-account');
-const loginForm = document.querySelector('#login-form');
+const login = document.querySelector('app-login');
 const uploadForm = document.querySelector('#upload-form');
 const uploadBtn = document.querySelector('#upload-btn');
 //#endregion
-
-function getLocal() {
-	let local = JSON.parse(localStorage.getItem('nre5152-p1-settings'));
-	if (local) {
-		return local;
-	} else {
-		local = { user: "", login: null, favorites: [] };
-		localStorage.setItem('nre5152-p1-settings', JSON.stringify(local));
-		return local;
-	}
-}
-
-// Hide login when clicking outside it
-loginForm.onclick = (e) => {
-	if (e.target == loginForm) {
-		loginForm.classList.add('hidden');
-	}
-}
 
 // Hide upload when clicking outside it
 uploadForm.onclick = (e) => {
@@ -42,82 +24,22 @@ uploadForm.onclick = (e) => {
 	}
 }
 
-// Check if the user is already logged in
-if (getLocal().login && getLocal().login.expires > Date.now()) {
-	loggedInAccount.innerHTML = getLocal().user;
-	loginBtn.onclick = logout();
-	// TODO: set hovers
-	uploadBtn.disabled = false;
-	uploadBtn.title = "";
-} else {
-	loginBtn.onclick = () => {
-		loginForm.classList.remove('hidden');
-	};
-}
-
-if (getLocal().user != "") {
-	document.querySelector('#username-in').value = getLocal().user;
-}
-
 if (getLocal().limit) {
 	searchLimitBox.value = getLocal().limit;
 }
 
 if (getLocal().search != null) {
 	searchBox.value = getLocal().search;
-	query();
 }
+query();
 
 uploadBtn.onclick = () => {
 	uploadForm.classList.remove('hidden');
 };
 
-function logout() {
-	//TODO
-}
-
-// Login submit action
-document.querySelector('#login-submit').onclick = async () => {
-	const userIn = document.querySelector('#username-in').value;
-	const passIn = document.querySelector('#password-in').value;
-
-	if (userIn && passIn) {
-		document.querySelector('#login-submit').classList.add('loading');
-		let response;
-		try {
-			response = await fetch("https://factorio-library.noahemke.com/api/login", {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ username: userIn, password: passIn })
-			});
-
-			if (response.ok) {
-				let localState = getLocal();
-				localState.login = await response.json();
-				localState.user = userIn;
-				localStorage.setItem('nre5152-p1-settings', JSON.stringify(localState));
-
-				loggedInAccount.innerHTML = getLocal().user;
-				loginBtn.onclick = logout();
-				// TODO: set hovers
-				query();
-				uploadBtn.disabled = false;
-				uploadBtn.title = "";
-				loginForm.classList.add('hidden');
-			} else {
-				document.querySelector('#username-in').classList.add('is-danger');
-				document.querySelector('#password-in').classList.add('is-danger');
-			}
-		} catch (e) {
-
-		}
-		document.querySelector('#login-submit').classList.remove('loading');
-	}
-}
-
 // upload submit action
 document.querySelector('#upload-submit').onclick = async () => {
-	document.querySelector('#upload-submit').classList.add('loading');
+	document.querySelector('#upload-submit').classList.add('is-loading');
 
 	const exportString = document.querySelector('#upload-in').value;
 
@@ -133,7 +55,7 @@ document.querySelector('#upload-submit').onclick = async () => {
 			blueprintJson = JSON.parse(
 				new TextDecoder("utf-8").decode(pako.inflate(atob(exportString.substring(1)))));
 		} catch (error) {
-			document.querySelector('#upload-submit').classList.remove('loading');
+			document.querySelector('#upload-submit').classList.remove('is-loading');
 			document.querySelector('#upload-in').classList.add('is-danger');
 			document.querySelector('#upload-info').innerHTML =
 				`parsing error: ${error}`;
