@@ -6,6 +6,11 @@
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>Factorio Blueprint Library</title>
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link
+		href="https://fonts.googleapis.com/css2?family=Titillium+Web:ital,wght@0,200;0,300;0,400;0,600;0,700;0,900;1,200;1,300;1,400;1,600;1,700&display=swap"
+		rel="stylesheet">
 	<link rel="stylesheet"
 		href="https://cdn.jsdelivr.net/npm/bulma@0.9.3/css/bulma.min.css">
 	<link rel="stylesheet"
@@ -25,8 +30,9 @@
 			<input type="text" class="input inline mx-2" placeholder="Search by name..."
 				id="search">
 			<input type="number" id="search-limit" class="input inline" placeholder="limit">
-			<button class="button" title="Must be logged in" id="upload-btn" disabled>Upload item</button>
-            <button class="button ml-auto is-warning" id="login-btn">
+			<button class="button" title="Must be logged in" id="upload-btn" disabled>Upload
+				item</button>
+			<button class="button ml-auto is-warning" id="login-btn">
 				<span id="logged-in-account">Log in</span>
 				<i id="user-icon" class="ml-1 fa-solid fa-user"></i>
 			</button>
@@ -35,28 +41,29 @@
 			Results go here. Search with an empty query for all items.
 		</span>
 	</factorio-panel-light>
-    <div id="login-form" class="hidden popup">
-        <factorio-panel-light>
-            <span slot="title">Login</span>
-            <div slot="content">
-                <p>Note: Please don't reuse your bank login, I'm not a security expert...</p>
-                <input type="text" class="input" id="username-in" placeholder="Username">
-                <input type="password" class="input" id="password-in" placeholder="Password">
-                <button id="login-submit" class="button is-primary">Login</button>
-                <button class="button" title="New accounts not available yet" disabled>Create account</button>
-            </div>
-        </factorio-panel-light>
-    </div>
-    <div id="upload-form" class="hidden popup">
-        <factorio-panel-light>
-            <span slot="title">Upload</span>
-            <div slot="content">
-                <p id="upload-info"></p>
-                <input type="text" class="input" id="upload-in" placeholder="Export string">
-                <button id="upload-submit" class="button is-primary">Upload</button>
-            </div>
-        </factorio-panel-light>
-    </div>
+	<div id="login-form" class="hidden popup">
+		<factorio-panel-light>
+			<span slot="title">Login</span>
+			<div slot="content">
+				<p>Note: Please don't reuse your bank login, I'm not a security expert...</p>
+				<input type="text" class="input" id="username-in" placeholder="Username">
+				<input type="password" class="input" id="password-in" placeholder="Password">
+				<button id="login-submit" class="button is-primary">Login</button>
+				<button class="button" title="New accounts not available yet" disabled>Create
+					account</button>
+			</div>
+		</factorio-panel-light>
+	</div>
+	<div id="upload-form" class="hidden popup">
+		<factorio-panel-light>
+			<span slot="title">Upload</span>
+			<div slot="content">
+				<p id="upload-info"></p>
+				<input type="text" class="input" id="upload-in" placeholder="Export string">
+				<button id="upload-submit" class="button is-primary">Upload</button>
+			</div>
+		</factorio-panel-light>
+	</div>
 </body>
 
 </html>

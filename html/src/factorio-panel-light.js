@@ -14,9 +14,13 @@ template.innerHTML = `
 .panel-inset-lighter {
     background-color: #414040;
 }
+div.fpanel span.title {
+	color: #ffe6c0;
+	font-weight: 700;
+}
 </style>
 <div class="fpanel p-2 m-3">
-	<span class="title has-text-light"><slot name="title"></slot></span>
+	<span class="title"><slot name="title"></slot></span>
 	<div class="panel-inset-lighter mt-2 p-2">
 		<slot name="content"></slot>
 	</div>

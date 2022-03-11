@@ -51,3 +51,7 @@ html {
     align-items: center;
     z-index: 99;
 }
+
+body {
+    font-family: 'Titillium Web', sans-serif;
+}

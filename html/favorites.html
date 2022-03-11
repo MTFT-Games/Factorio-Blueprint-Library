@@ -6,12 +6,17 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Factorio Blueprint Library</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Titillium+Web:ital,wght@0,200;0,300;0,400;0,600;0,700;0,900;1,200;1,300;1,400;1,600;1,700&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet"
         href="https://cdn.jsdelivr.net/npm/bulma@0.9.3/css/bulma.min.css">
-        <link rel="stylesheet"
-		href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
-		integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg=="
-		crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+        integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link rel="stylesheet" href="styles/factorio.css">
     <script type="module" src="src/favorites.js"></script>
 </head>
@@ -20,31 +25,38 @@
     <!-- Navbar  -->
     <factorio-header data-active="favorites"></factorio-header>
     <factorio-panel-light>
-		<span slot="title">
-			<button class="button is-danger" id="clear-local-btn">Clear all local favorites</button>
-            <button class="button is-danger" title="Must be logged in" id="clear-server-btn" disabled>Clear all cloud favorites</button>
-			<!-- maybe ill add a way to search through favs if needed <input type="text" class="input inline mx-2" placeholder="Search by name..."
+        <span slot="title">
+            <button class="button is-danger" id="clear-local-btn">Clear all local
+                favorites</button>
+            <button class="button is-danger" title="Must be logged in"
+                id="clear-server-btn" disabled>Clear all cloud favorites</button>
+            <!-- maybe ill add a way to search through favs if needed <input type="text" class="input inline mx-2" placeholder="Search by name..."
 				id="search"> -->
-			<input type="number" id="search-limit" class="input inline" placeholder="limit">
-            <button class="button is-primary" id="refresh-btn"><i class="fa-solid fa-arrows-rotate"></i></button>
+            <input type="number" id="search-limit" class="input inline"
+                placeholder="limit">
+            <button class="button is-primary" id="refresh-btn"><i
+                    class="fa-solid fa-arrows-rotate"></i></button>
             <button class="button ml-auto is-warning" id="login-btn">
-				<span id="logged-in-account">Log in</span>
-				<i id="user-icon" class="ml-1 fa-solid fa-user"></i>
-			</button>
-		</span>
-		<span slot="content" id="output">
-			Results go here.
-		</span>
-	</factorio-panel-light>
+                <span id="logged-in-account">Log in</span>
+                <i id="user-icon" class="ml-1 fa-solid fa-user"></i>
+            </button>
+        </span>
+        <span slot="content" id="output">
+            Results go here.
+        </span>
+    </factorio-panel-light>
     <div id="login-form" class="hidden popup">
         <factorio-panel-light>
             <span slot="title">Login</span>
             <div slot="content">
-                <p>Note: Please don't reuse your bank login, I'm not a security expert...</p>
+                <p>Note: Please don't reuse your bank login, I'm not a security expert...
+                </p>
                 <input type="text" class="input" id="username-in" placeholder="Username">
-                <input type="password" class="input" id="password-in" placeholder="Password">
+                <input type="password" class="input" id="password-in"
+                    placeholder="Password">
                 <button id="login-submit" class="button is-primary">Login</button>
-                <button class="button" title="New accounts not available yet" disabled>Create account</button>
+                <button class="button" title="New accounts not available yet"
+                    disabled>Create account</button>
             </div>
         </factorio-panel-light>
     </div>

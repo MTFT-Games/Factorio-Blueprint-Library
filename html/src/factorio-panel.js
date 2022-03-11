@@ -11,9 +11,13 @@ template.innerHTML = `
     box-shadow: inset 0 0 3px 0 #000,0 -2px 2px -1px #000,-2px 0 2px -2px #0f0d0c,2px 0 2px -2px #0f0d0c,0 2px 2px -2px #ebe6e4;
     background-color: #242324;
 }
+div.fpanel span.title {
+	color: #ffe6c0;
+	font-weight: 700;
+}
 </style>
 <div class="fpanel p-2 m-3">
-	<span class="title has-text-light"><slot name="title"></slot></span>
+	<span class="title"><slot name="title"></slot></span>
 	<div class="panel-inset mt-2 p-2">
 		<slot name="content"></slot>
 	</div>
