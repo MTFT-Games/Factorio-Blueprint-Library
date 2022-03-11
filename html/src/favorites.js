@@ -41,7 +41,7 @@ document.querySelector('#clear-local-btn').onclick = () => {
 };
 
 document.querySelector('#clear-server-btn').onclick = async () => {
-	document.querySelector('#clear-server-btn').classList.add('loading');
+	document.querySelector('#clear-server-btn').classList.add('is-loading');
 	const cards = document.querySelectorAll('factorio-card[data-favorited="true"]');
 	const promises = [];
 	// Unfavorite each card
@@ -52,7 +52,7 @@ document.querySelector('#clear-server-btn').onclick = async () => {
 	for (const promise of promises) {
 		await promise;
 	}
-	document.querySelector('#clear-server-btn').classList.remove('loading');
+	document.querySelector('#clear-server-btn').classList.remove('is-loading');
 	getFavorites();
 };
 
