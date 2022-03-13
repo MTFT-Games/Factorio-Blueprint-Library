@@ -1,12 +1,13 @@
 const template = document.createElement("template");
 template.innerHTML = `
 <link rel="stylesheet"
-	href="https://cdn.jsdelivr.net/npm/bulma@0.9.3/css/bulma.min.css">
+href="https://cdn.jsdelivr.net/npm/bulma@0.9.3/css/bulma.min.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 <style>
 .fpanel {
-    background-color: #e4cead;
-    box-shadow: inset 3px 0 2px -2px #201815,inset 0 3px 2px -2px #8f8c8b,inset -3px 0 2px -2px #201815,inset 0 -3px 3px -3px #000,0 0 3px 0 #201815;
+	background-color: #e4cead;
+	box-shadow: inset 3px 0 2px -2px #201815,inset 0 3px 2px -2px #8f8c8b,inset -3px 0 2px -2px #201815,inset 0 -3px 3px -3px #000,0 0 3px 0 #201815;
+	width: 13em;
 }
 .panel-inset, .panel-inset-lighter {
     box-shadow: inset 0 0 3px 0 #000,0 -2px 2px -1px #000,-2px 0 2px -2px #0f0d0c,2px 0 2px -2px #0f0d0c,0 2px 2px -2px #ebe6e4;
@@ -24,10 +25,6 @@ span.title {
     height: 1.5em;
     display: block;
     white-space: nowrap;
-}
-
-div.fpanel {
-    width: 13em;
 }
 
 div.body {
@@ -130,14 +127,17 @@ class FactorioCard extends HTMLElement {
 		super();
 		this.attachShadow({ mode: "open" });
 		this.shadowRoot.appendChild(template.content.cloneNode(true));
+
 		this.span = this.shadowRoot.querySelector("span.title");
 		this.div = this.shadowRoot.querySelector("div.body");
 		this.favBtn = this.shadowRoot.querySelector(".favorite-btn");
+
 		this.favBtn.onclick = async () => {
 			let settings = JSON.parse(localStorage.getItem('nre5152-p1-settings'));
 			if (this.dataset.favorited == 'true') {
 				if (settings.login && settings.login.expires > Date.now()) {
 					// remove from favs in server
+					// TODO: try block and error catching
 					const response = await fetch("https://factorio-library.noahemke.com/api/content/favorites", {
 						method: 'POST',
 						headers: { 'Content-Type': 'application/json' },
@@ -209,11 +209,6 @@ class FactorioCard extends HTMLElement {
 				this.shadowRoot.querySelector(`.icon${element.index}`).src = `images/sprites/${element.signal.name}.png`;
 			});
 		}
-
-		// TODO: Parse object and display useful bits
-		// set data-id to the id of the item
-		// check for a data-favorited to color the favorite button and determine action
-		// script that creates these will add favorited tags to those with a matching id in the favorites
 	}
 
 	set item(val) {

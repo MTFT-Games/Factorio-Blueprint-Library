@@ -12,9 +12,11 @@ const searchButton = document.querySelector("#search-btn");
 const searchBox = document.querySelector("#search");
 const searchLimitBox = document.querySelector("#search-limit");
 const output = document.querySelector("#output");
-const login = document.querySelector('app-login');
 const uploadForm = document.querySelector('#upload-form');
 const uploadBtn = document.querySelector('#upload-btn');
+const uploadSubmit = document.querySelector('#upload-submit');
+const uploadIn = document.querySelector('#upload-in');
+const uploadInfo = document.querySelector('#upload-info');
 //#endregion
 
 // Hide upload when clicking outside it
@@ -38,10 +40,10 @@ uploadBtn.onclick = () => {
 };
 
 // upload submit action
-document.querySelector('#upload-submit').onclick = async () => {
-	document.querySelector('#upload-submit').classList.add('is-loading');
+uploadSubmit.onclick = async () => {
+	uploadSubmit.classList.add('is-loading');
 
-	const exportString = document.querySelector('#upload-in').value;
+	const exportString = uploadIn.value;
 
 	if (exportString) {
 		let content = {
@@ -55,9 +57,9 @@ document.querySelector('#upload-submit').onclick = async () => {
 			blueprintJson = JSON.parse(
 				new TextDecoder("utf-8").decode(pako.inflate(atob(exportString.substring(1)))));
 		} catch (error) {
-			document.querySelector('#upload-submit').classList.remove('is-loading');
-			document.querySelector('#upload-in').classList.add('is-danger');
-			document.querySelector('#upload-info').innerHTML =
+			uploadSubmit.classList.remove('is-loading');
+			uploadIn.classList.add('is-danger');
+			uploadInfo.innerHTML =
 				`parsing error: ${error}`;
 			return;
 		}
@@ -78,39 +80,39 @@ document.querySelector('#upload-submit').onclick = async () => {
 		switch (response.status) {
 			case 401:
 				// Login expired, update login button to show login and disable button. probably also tell the user to log in again
-				document.querySelector('#upload-submit').classList.remove('loading');
-				document.querySelector('#upload-in').classList.add('is-danger');
+				uploadSubmit.classList.remove('loading');
+				uploadIn.classList.add('is-danger');
 				break;
 
 			case 500:
 				// Server error adding data. tell user and abort
-				document.querySelector('#upload-submit').classList.remove('loading');
-				document.querySelector('#upload-in').classList.add('is-danger');
-				document.querySelector('#upload-info').innerHTML =
+				uploadSubmit.classList.remove('loading');
+				uploadIn.classList.add('is-danger');
+				uploadInfo.innerHTML =
 					`server error`;
 				break;
 
 			case 400:
 				// client error forming request. tell user and abort
-				document.querySelector('#upload-submit').classList.remove('loading');
-				document.querySelector('#upload-in').classList.add('is-danger');
-				document.querySelector('#upload-info').innerHTML =
+				uploadSubmit.classList.remove('loading');
+				uploadIn.classList.add('is-danger');
+				uploadInfo.innerHTML =
 					`client error`;
 				break;
 
 			case 200:
 				// success. tell user and show them the id returned
-				document.querySelector('#upload-submit').classList.remove('loading');
-				document.querySelector('#upload-in').classList.add('is-primary');
-				document.querySelector('#upload-info').innerHTML =
+				uploadSubmit.classList.remove('loading');
+				uploadIn.classList.add('is-primary');
+				uploadInfo.innerHTML =
 					`Success! Id of new item: ${await response.text()}`;
 				break;
 
 			default:
 				// unknown error, tell user and abort
-				document.querySelector('#upload-submit').classList.remove('loading');
-				document.querySelector('#upload-in').classList.add('is-danger');
-				document.querySelector('#upload-info').innerHTML =
+				uploadSubmit.classList.remove('loading');
+				uploadIn.classList.add('is-danger');
+				uploadInfo.innerHTML =
 					`unknown error`;
 				break;
 		}

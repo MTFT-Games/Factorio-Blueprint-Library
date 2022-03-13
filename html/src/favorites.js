@@ -9,10 +9,10 @@ import { getLocal } from "./utils.js";
 const refreshBtn = document.querySelector("#refresh-btn");
 const limitBox = document.querySelector("#search-limit");
 const output = document.querySelector("#output");
-const login = document.querySelector('app-login');
-const confirmForm = document.querySelector('#confirm-form');
-const confirmBtn = document.querySelector('#confirm-btn');
-const cancelBtn = document.querySelector('#cancel-btn');
+// These are unused but are planned to be used in a future feature
+// const confirmForm = document.querySelector('#confirm-form');
+// const confirmBtn = document.querySelector('#confirm-btn');
+// const cancelBtn = document.querySelector('#cancel-btn');
 //#endregion
 
 document.querySelector('#clear-local-btn').onclick = () => {
