@@ -1,9 +1,10 @@
 #!/usr/bin/env node
+//#region Requires
 require('dotenv').config();
 const http = require('http');
 const crypto = require('crypto');
 const exec = require('child_process').execSync;
-const { MongoClient, ObjectId } = require('mongodb');
+const { ObjectId } = require('mongodb');
 const nodemailer = require('nodemailer').createTransport({
   service: 'gmail',
   auth: {
@@ -13,27 +14,10 @@ const nodemailer = require('nodemailer').createTransport({
 });
 const bcrypt = require('bcryptjs');
 const base64url = require('base64url');
+const database = require('./database.js');
+//#endregion
 
 const secret = process.env.GITHUB_SECRET;
-const mongoAuth = process.env.MONGO_AUTH;
-const client = new MongoClient(`mongodb://API:${mongoAuth}@noahemke.com/factorio-library`);
-let users;
-let blueprints;
-
-// Connect the client to the server
-async function connectMongo() {
-  try {
-    await client.connect();
-    // Establish and verify connection
-    console.log(await client.db('factorio-library').command({ ping: 1 }));
-    console.log('Connected successfully to server');
-    users = await client.db('factorio-library').collection('users');
-    blueprints = await client.db('factorio-library').collection('blueprints');
-  } finally {
-    console.log('done with mongo startup');
-  }
-}
-connectMongo().catch((e) => console.log(`Error connecting: ${e}`));
 
 const docs = `
 	<h1>Factorio Blueprint Library API Docs</h1>
@@ -100,7 +84,7 @@ const docs = `
 
 // Async function to check if a username is valid and send an email to verify the email
 async function verify(data, res) {
-  if (await users.findOne({ username: data.username })) {
+  if (await database.readUser(data.username)) {
     res.statusCode = 409;
     res.end('Username taken');
   } else {
@@ -125,15 +109,13 @@ async function verify(data, res) {
 
 // Async function to confirm a free user and create a new account
 async function createUser(data, res) {
-  if (await users.findOne({ username: data.username })) {
+  if (await database.readUser(data.username)) {
     res.statusCode = 409;
     res.end('Username taken');
   } else {
     const passHash = bcrypt.hash(data.password, 10);
     const generatedLogin = generateToken(data);
-    await users.insertOne({
-      username: data.username, password: await passHash, email: data.email, login: generatedLogin, favorites: [],
-    });
+    await database.createUser(data.username, await passHash, data.email, generatedLogin);
     res.statusCode = 200;
     res.end(JSON.stringify(generatedLogin));
   }
@@ -141,7 +123,7 @@ async function createUser(data, res) {
 
 async function login(data, res) {
   // Check username
-  const user = await users.findOne({ username: data.username });
+  const user = await database.readUser(data.username);
   if (user) {
     // Check password
     if (await bcrypt.compare(data.password, user.password)) {
@@ -149,7 +131,7 @@ async function login(data, res) {
       const token = generateToken(data);
 
       // Set token in db
-      await users.updateOne({ username: data.username }, { $set: { login: token } });
+      await database.updateLogin(data.username, token);
 
       // return
       res.statusCode = 200;
@@ -165,7 +147,7 @@ async function login(data, res) {
 }
 
 async function addEntry(data, res) {
-  const user = await users.findOne({ login: data.login });
+  const user = await database.readUserByLogin(data.login);
   // auth
   if (user && user.login.expires > Date.now()) {
     // check that the client formatted it properly
@@ -195,7 +177,7 @@ async function addEntry(data, res) {
 async function queryFavorites(data, res) {
   let mappedFavorites;
   if (data.login) {
-    const user = await users.findOne({ login: data.login });
+    const user = await database.readUserByLogin(data.login);
     // auth
     if (user && user.login.expires > Date.now()) {
       mappedFavorites = user.favorites.map((e) => ObjectId(e));
@@ -465,7 +447,7 @@ const server = http.createServer((req, res) => {
 });
 
 server.listen(8081, () => {
-  console.log('Server running');
+  console.log('Server starting...');
 });
 
 process.on('SIGTERM', async () => {
