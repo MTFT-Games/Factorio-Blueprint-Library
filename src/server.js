@@ -156,7 +156,7 @@ async function addEntry(data, res) {
 			&& (data.content.type == 'blueprint_book' || data.content.type == 'blueprint')
 			&& data.content.content
 			&& data.content.exportString) {
-      const result = await blueprints.insertOne(data.content);
+      const result = await database.createBlueprint(data.content);
       if (result.insertedId) {
         res.statusCode = 200;
         res.end(JSON.stringify(result.insertedId));
@@ -195,7 +195,7 @@ async function queryFavorites(data, res) {
 }
 
 async function editFavorites(data, res) {
-  const user = await users.findOne({ login: data.login });
+  const user = await database.readUserByLogin(data.login);
   // auth
   if (user && user.login.expires > Date.now()) {
     if (data.action == 'add') {
@@ -204,7 +204,7 @@ async function editFavorites(data, res) {
         res.statusCode = 200;
         res.end();
       } else {
-        await users.updateOne({ login: data.login }, { $push: { favorites: data.id } });
+        await database.updateUserFavorites(data.login, data.id, true);
         await blueprints.updateOne({ _id: ObjectId(data.id) }, { $inc: { favorites: 1 } });
         res.statusCode = 200;
         res.end();
@@ -212,7 +212,7 @@ async function editFavorites(data, res) {
     } else {
       // check user favs and update if needed
       if (user.favorites.includes(data.id)) {
-        await users.updateOne({ login: data.login }, { $pull: { favorites: data.id } });
+        await database.updateUserFavorites(data.login, data.id, false);
         await blueprints.updateOne({ _id: ObjectId(data.id) }, { $inc: { favorites: -1 } });
         res.statusCode = 200;
         res.end();
@@ -232,14 +232,15 @@ async function contentQuery(data, res) {
 
   // Check login and get favorites
   if (data.login) {
-    const user = await users.findOne({ login: data.login });
+    const user = await database.readUserByLogin(data.login);
     if (user) {
       output.favorites = user.favorites;
 
       const token = generateToken(data);
 
       // Set token in db
-      await users.updateOne({ login: data.login }, { $set: { login: token } });
+      await database.updateLoginByToken(data.login, token);
+      
       output.login = token;
     } else {
       output.favorites = 'Invalid login';
@@ -447,7 +448,7 @@ const server = http.createServer((req, res) => {
 });
 
 server.listen(8081, () => {
-  console.log('Server starting...');
+  console.log('[INFO]: Listening on port 8081');
 });
 
 process.on('SIGTERM', async () => {

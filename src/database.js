@@ -40,7 +40,7 @@ function readUser(username) {
 
 /**
  * Retrieves a user from the database by a login token.
- * @param {*} loginToken The login token to find the user with.
+ * @param {object} loginToken The login token to find the user with.
  * @returns A promise resolving to null or a document of the user.
  */
 function readUserByLogin(loginToken) {
@@ -57,10 +57,10 @@ function readUserByLogin(loginToken) {
  */
 function createUser(username, passHash, email, loginToken) {
   return users.insertOne({
-    username: username, 
-    password: passHash, 
-    email: email, 
-    login: loginToken, 
+    username: username,
+    password: passHash,
+    email: email,
+    login: loginToken,
     favorites: [],
   });
 }
@@ -75,4 +75,50 @@ function updateLogin(username, loginToken) {
   return users.updateOne({ username: username }, { $set: { login: loginToken } });
 }
 
-module.exports = { connectMongo, readUser, createUser, updateLogin, readUserByLogin, };
+// TODO: See if its possible to reasonably combine these two ^^vv
+
+/**
+ * Updates the login token of a user with an existing token in the database.
+ * @param {object} currentToken The current token of the user to be updated.
+ * @param {object} newToken The new token to be set.
+ * @returns Unknown
+ */
+function updateLoginByToken(currentToken, newToken) {
+  return users.updateOne({ login: currentToken }, { $set: { login: newToken } });
+}
+
+/**
+ * Updates a user's stored faforites by adding or removing a given blueprint id from their favorites.
+ * @param {object} loginToken The current login token of the user to edit.
+ * @param {string} dataId The blueprint id to add or remove.
+ * @param {boolean} add A boolean to indicate the desired operation. True will add the favorite, false will remove.
+ * @returns Unknown
+ */
+function updateUserFavorites(loginToken, dataId, add) {
+  if (add) {
+    return users.updateOne({ login: loginToken }, { $push: { favorites: dataId } });
+  } else {
+    return users.updateOne({ login: loginToken }, { $pull: { favorites: dataId } });
+  }
+}
+
+/**
+ * Adds a blueprint to the database.
+ * @param {object} blueprint The blueprint to be added.
+ * @returns InsertOneResult
+ */
+function createBlueprint(blueprint) {
+  return blueprints.insertOne(data.content);
+}
+
+/**
+ * Reads blueprints from the database by a list of IDs.
+ * @param {*} favoriteIds 
+ * @param {*} limit 
+ */
+// TODO: Left off here. also think again about function naming
+function readFavorites(favoriteIds, limit) {
+  blueprints.find({ _id: { $in: mappedFavorites } }).limit(data.limit).toArray();
+}
+
+module.exports = { connectMongo, readUser, createUser, updateLogin, readUserByLogin, updateUserFavorites, updateLoginByToken, createBlueprint, };
