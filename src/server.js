@@ -4,7 +4,6 @@ require('dotenv').config();
 const http = require('http');
 const crypto = require('crypto');
 const exec = require('child_process').execSync;
-const { ObjectId } = require('mongodb');
 const nodemailer = require('nodemailer').createTransport({
   service: 'gmail',
   auth: {
@@ -18,6 +17,8 @@ const database = require('./database.js');
 //#endregion
 
 const secret = process.env.GITHUB_SECRET;
+
+const port = process.env.PORT || process.env.NODE_PORT || 3000;
 
 // TODO: Get rid of this. Make it a file.
 // TODO: Optimize await calls.
@@ -436,8 +437,10 @@ const server = http.createServer((req, res) => {
   }
 });
 
-server.listen(8081, () => {
-  console.log('[INFO]: Listening on port 8081');
+database.connectMongo();
+
+server.listen(port, () => {
+  console.log(`[INFO]: Listening on port ${port}`);
 });
 
 process.on('SIGTERM', async () => {
