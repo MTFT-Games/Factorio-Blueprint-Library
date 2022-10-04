@@ -19,6 +19,8 @@ const database = require('./database.js');
 
 const secret = process.env.GITHUB_SECRET;
 
+// TODO: Get rid of this. Make it a file.
+// TODO: Optimize await calls.
 const docs = `
 	<h1>Factorio Blueprint Library API Docs</h1>
 	<hr>
@@ -152,10 +154,10 @@ async function addEntry(data, res) {
   if (user && user.login.expires > Date.now()) {
     // check that the client formatted it properly
     if (data.content.author == user.username
-			&& data.content.favorites == 0
-			&& (data.content.type == 'blueprint_book' || data.content.type == 'blueprint')
-			&& data.content.content
-			&& data.content.exportString) {
+      && data.content.favorites == 0
+      && (data.content.type == 'blueprint_book' || data.content.type == 'blueprint')
+      && data.content.content
+      && data.content.exportString) {
       const result = await database.createBlueprint(data.content);
       if (result.insertedId) {
         res.statusCode = 200;
@@ -175,21 +177,21 @@ async function addEntry(data, res) {
 }
 
 async function queryFavorites(data, res) {
-  let mappedFavorites;
+  let favoriteIds;
   if (data.login) {
     const user = await database.readUserByLogin(data.login);
     // auth
     if (user && user.login.expires > Date.now()) {
-      mappedFavorites = user.favorites.map((e) => ObjectId(e));
+      favoriteIds = user.favorites;
     } else {
       res.statusCode = 401;
       res.end('Invalid or expired login key');
       return;
     }
   } else {
-    mappedFavorites = data.ids.map((e) => ObjectId(e));
+    favoriteIds = data.ids;
   }
-  const output = await blueprints.find({ _id: { $in: mappedFavorites } }).limit(data.limit).toArray();
+  const output = await database.readFavorites(favoriteIds, data.limit);
   res.statusCode = 200;
   res.end(JSON.stringify(output));
 }
@@ -205,7 +207,7 @@ async function editFavorites(data, res) {
         res.end();
       } else {
         await database.updateUserFavorites(data.login, data.id, true);
-        await blueprints.updateOne({ _id: ObjectId(data.id) }, { $inc: { favorites: 1 } });
+        await database.updateFavoriteCount(data.id, 1);
         res.statusCode = 200;
         res.end();
       }
@@ -213,7 +215,7 @@ async function editFavorites(data, res) {
       // check user favs and update if needed
       if (user.favorites.includes(data.id)) {
         await database.updateUserFavorites(data.login, data.id, false);
-        await blueprints.updateOne({ _id: ObjectId(data.id) }, { $inc: { favorites: -1 } });
+        await database.updateFavoriteCount(data.id, -1);
         res.statusCode = 200;
         res.end();
       } else {
@@ -240,7 +242,7 @@ async function contentQuery(data, res) {
 
       // Set token in db
       await database.updateLoginByToken(data.login, token);
-      
+
       output.login = token;
     } else {
       output.favorites = 'Invalid login';
@@ -249,19 +251,7 @@ async function contentQuery(data, res) {
     output.favorites = 'Not logged in';
   }
 
-  let filter = {};
-  let sort = { favorites: -1 };
-
-  // May want to return errors instead of quietly failing
-  if (typeof data.filter === 'object' && !Array.isArray(data.filter) && data.filter !== null) {
-    filter = data.filter;
-  }
-
-  if (typeof data.sort === 'object' && !Array.isArray(data.sort) && data.sort !== null) {
-    sort = data.sort;
-  }
-
-  output.content = await blueprints.find(filter).sort(sort).limit(data.limit).toArray();
+  output.content = await database.readBlueprints(data.filter, data.sort, data.limit);
   res.statusCode = 200;
   res.end(JSON.stringify(output));
 }
@@ -286,7 +276,7 @@ const server = http.createServer((req, res) => {
       res.end(docs);
       break;
 
-      // Check if a username is valid and sends an email to verify the email
+    // Check if a username is valid and sends an email to verify the email
     case '/login/verify': {
       res.setHeader('Content-Type', 'text/html');
       let data = '';
@@ -420,8 +410,7 @@ const server = http.createServer((req, res) => {
     case '/git': {
       res.setHeader('Content-Type', 'text/html');
       req.on('data', (chunk) => {
-        const signature = `sha1=${
-          crypto.createHmac('sha1', secret).update(chunk.toString()).digest('hex')}`;
+        const signature = `sha1=${crypto.createHmac('sha1', secret).update(chunk.toString()).digest('hex')}`;
 
         // Check for valid signature
         if (req.headers['x-hub-signature'] == signature) {

@@ -1,4 +1,4 @@
-const { MongoClient } = require('mongodb');
+const { MongoClient, ObjectId } = require('mongodb');
 
 // TODO: Check for auth key and err if not
 // TODO: Make mongo host an env var
@@ -113,12 +113,54 @@ function createBlueprint(blueprint) {
 
 /**
  * Reads blueprints from the database by a list of IDs.
- * @param {*} favoriteIds 
- * @param {*} limit 
+ * @param {string[]} favoriteIds An array of IDs to retrieve.
+ * @param {number} limit The maximum number of results to return.
+ * @returns Promise resolving to and array of blueprints
  */
-// TODO: Left off here. also think again about function naming
 function readFavorites(favoriteIds, limit) {
-  blueprints.find({ _id: { $in: mappedFavorites } }).limit(data.limit).toArray();
+  // Convert to BSON id
+  favoriteIds = favoriteIds.map((e) => ObjectId(e));
+
+  return blueprints.find({ _id: { $in: favoriteIds } }).limit(limit).toArray();
 }
 
-module.exports = { connectMongo, readUser, createUser, updateLogin, readUserByLogin, updateUserFavorites, updateLoginByToken, createBlueprint, };
+/**
+ * Increments the favorites count of a blueprint.
+ * @param {*} blueprintId The ID of the blueprint to update.
+ * @param {*} incrementBy The number to increment by.
+ * @returns Unknown 
+ */
+function updateFavoriteCount(blueprintId, incrementBy) {
+  blueprintId = ObjectId(blueprintId);
+
+  return blueprints.updateOne({ _id: ObjectId(blueprintId) }, { $inc: { favorites: incrementBy } });
+}
+
+/**
+ * Reads blueprints from the database fitting a filter.
+ * @param {object} filter A mongodb filter object to filter results.
+ * @param {*} sort A mongodb sort object to sort results by.
+ * @param {*} limit The maximum number of results to return.
+ * @returns A promise of the found blueprints.
+ */
+function readBlueprints(filter = {}, sort = { favorites: -1 }, limit = 30) {
+  if (filter._id) {
+    filter._id = ObjectId(filter._id);
+  }
+
+  return blueprints.find(filter).sort(sort).limit(limit).toArray();
+}
+
+module.exports = {
+  connectMongo,
+  readUser,
+  createUser,
+  updateLogin,
+  readUserByLogin,
+  updateUserFavorites,
+  updateLoginByToken,
+  createBlueprint,
+  readFavorites,
+  updateFavoriteCount,
+  readBlueprints,
+};
