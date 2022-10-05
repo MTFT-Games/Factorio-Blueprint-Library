@@ -168,4 +168,5 @@ module.exports = {
   readFavorites,
   updateFavoriteCount,
   readBlueprints,
+  close: client.close,
 };
