@@ -3,10 +3,10 @@ const { MongoClient, ObjectId } = require('mongodb');
 // TODO: Check for auth key and err if not
 // TODO: Make mongo host an env var
 const client = new MongoClient(
-  `mongodb://API:${process.env.MONGO_AUTH}@noahemke.com/factorio-library`);
+  `mongodb://API:${process.env.MONGO_AUTH}@noahemke.com/factorio-library`,
+);
 let users;
 let blueprints;
-
 
 /**
  * Establish a connection to the Mongo database.
@@ -33,7 +33,7 @@ async function connectMongo() {
  * @returns A promise resolving to null or a document of the user.
  */
 function readUser(username) {
-  return users.findOne({ username: username });
+  return users.findOne({ username });
 }
 
 // TODO: See if its possible to reasonably combine these two ^^vv
@@ -57,9 +57,9 @@ function readUserByLogin(loginToken) {
  */
 function createUser(username, passHash, email, loginToken) {
   return users.insertOne({
-    username: username,
+    username,
     password: passHash,
-    email: email,
+    email,
     login: loginToken,
     favorites: [],
   });
@@ -72,7 +72,7 @@ function createUser(username, passHash, email, loginToken) {
  * @returns Unknown
  */
 function updateLogin(username, loginToken) {
-  return users.updateOne({ username: username }, { $set: { login: loginToken } });
+  return users.updateOne({ username }, { $set: { login: loginToken } });
 }
 
 // TODO: See if its possible to reasonably combine these two ^^vv
@@ -88,18 +88,19 @@ function updateLoginByToken(currentToken, newToken) {
 }
 
 /**
- * Updates a user's stored faforites by adding or removing a given blueprint id from their favorites.
+ * Updates a user's stored favorites by adding or removing a given blueprint id from
+ * their favorites.
  * @param {object} loginToken The current login token of the user to edit.
  * @param {string} dataId The blueprint id to add or remove.
- * @param {boolean} add A boolean to indicate the desired operation. True will add the favorite, false will remove.
+ * @param {boolean} add A boolean to indicate the desired operation. True will add
+ * the favorite, false will remove.
  * @returns Unknown
  */
 function updateUserFavorites(loginToken, dataId, add) {
   if (add) {
     return users.updateOne({ login: loginToken }, { $push: { favorites: dataId } });
-  } else {
-    return users.updateOne({ login: loginToken }, { $pull: { favorites: dataId } });
   }
+  return users.updateOne({ login: loginToken }, { $pull: { favorites: dataId } });
 }
 
 /**
@@ -108,7 +109,7 @@ function updateUserFavorites(loginToken, dataId, add) {
  * @returns InsertOneResult
  */
 function createBlueprint(blueprint) {
-  return blueprints.insertOne(data.content);
+  return blueprints.insertOne(blueprint);
 }
 
 /**
@@ -119,21 +120,24 @@ function createBlueprint(blueprint) {
  */
 function readFavorites(favoriteIds, limit) {
   // Convert to BSON id
-  favoriteIds = favoriteIds.map((e) => ObjectId(e));
+  const bsonFavoriteIds = favoriteIds.map((e) => ObjectId(e));
 
-  return blueprints.find({ _id: { $in: favoriteIds } }).limit(limit).toArray();
+  return blueprints.find({ _id: { $in: bsonFavoriteIds } }).limit(limit).toArray();
 }
 
 /**
  * Increments the favorites count of a blueprint.
  * @param {*} blueprintId The ID of the blueprint to update.
  * @param {*} incrementBy The number to increment by.
- * @returns Unknown 
+ * @returns Unknown
  */
 function updateFavoriteCount(blueprintId, incrementBy) {
-  blueprintId = ObjectId(blueprintId);
+  const bsonBlueprintId = ObjectId(blueprintId);
 
-  return blueprints.updateOne({ _id: ObjectId(blueprintId) }, { $inc: { favorites: incrementBy } });
+  return blueprints.updateOne(
+    { _id: ObjectId(bsonBlueprintId) },
+    { $inc: { favorites: incrementBy } },
+  );
 }
 
 /**
@@ -144,11 +148,12 @@ function updateFavoriteCount(blueprintId, incrementBy) {
  * @returns A promise of the found blueprints.
  */
 function readBlueprints(filter = {}, sort = { favorites: -1 }, limit = 30) {
+  const convertedFilter = filter;
   if (filter._id) {
-    filter._id = ObjectId(filter._id);
+    convertedFilter._id = ObjectId(filter._id);
   }
 
-  return blueprints.find(filter).sort(sort).limit(limit).toArray();
+  return blueprints.find(convertedFilter).sort(sort).limit(limit).toArray();
 }
 
 module.exports = {

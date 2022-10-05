@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-//#region Requires
+// #region Requires
 require('dotenv').config();
 const http = require('http');
 const crypto = require('crypto');
@@ -14,7 +14,7 @@ const nodemailer = require('nodemailer').createTransport({
 const bcrypt = require('bcryptjs');
 const base64url = require('base64url');
 const database = require('./database.js');
-//#endregion
+// #endregion
 
 const secret = process.env.GITHUB_SECRET;
 
