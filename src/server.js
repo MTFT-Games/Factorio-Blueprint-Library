@@ -19,8 +19,8 @@ const nodemailer = require('nodemailer').createTransport({
 });
 const bcrypt = require('bcryptjs');
 const base64url = require('base64url');
-const database = require('./database.js');
 const fs = require('fs');
+const database = require('./database.js');
 // #endregion
 
 const secret = process.env.GITHUB_SECRET;
@@ -47,70 +47,8 @@ try {
 }
 // #endregion
 
-// TODO: Get rid of this. Make it a file.
 // TODO: Optimize await calls.
-const docs = `
-  <h1>Factorio Blueprint Library API Docs</h1>
-  <hr>
-  <h2>Login</h2>
-  <h3>/login</h3> 
-  <p>Requires a username, a bool to remember this computer, and the password.</p> 
-  <p>
-    Queries database for a user that matches the name and password. If none are 
-    found, return invalid credentials error, otherwise generates a new login key 
-    and sets it in the user entry with an expiration a set time after, then 
-    returns the login key to the client.
-  </p>
-  <p>Returns login key.</p>
-  
-  <h3>/login/verify</h3>
-  <p>Requires a username and email.</p>
-  <p>
-    Checks if the username is used and returns an error if so, otherwise generates 
-    a random code, emails it to the provided address and returns the the code 
-    for the client to check against. This should be improved in the future since this does nothing to effectively stop someone intentionally using someone elses email, it just makes sure that a normal user didn't mistype their recovery email.
-  </p>
-  <p>
-    Returns the code for client to check user response against before 
-    sending /login/new.
-  </p>
-
-  <h3>/login/new</h3> 
-  <p>Requires username, password, and an email.</p>
-  <p>
-    Check if a matching username exists and return an error if so, otherwise 
-    crate a new user entry and generate new login key to be set and returned.
-  </p>
-  <p>Returns login key.</p>
-  <hr>
-  <h2>Content</h2>
-  <h3>/content/favorites</h3>
-  <p>Requires a login key and page size or id and action.</p>
-  <p>
-    Gets the favorite Ids of the user, queries for each Ids entry and returns 
-    all the entries or adds or removes a specified id from favorites.
-  </p>
-  <p>Returns favorite entries.</p>
-
-  <h3>/content/query</h3>
-  <p>Optional filter, optional sort, optional login key and Requires page limit.</p>
-  <p>
-    Performs a query with the given filter, limit, and sort and returns the 
-    results. If a login key was given, also refreshes it and returns the new 
-    key and their favorite Ids.
-  </p>
-  <p>Returns results, optionally favorites and login key.</p>
-
-  <h3>/content/new</h3>
-  <p>Requires login key and object to enter.</p>
-  <p>
-    Checks the user of the login key and adds the object to the database if it is formatted properly.
-  </p>
-  <p>Returns if of added object login key.</p>
-
-  <h3>maybe update and delete later</h3>
-  <h3>todo: add to favorites</h3>
-`;
+const docs = fs.readFileSync(`${webdir}/apidocs.html`);
 
 function generateToken(data) {
   const requestTime = Date.now();
