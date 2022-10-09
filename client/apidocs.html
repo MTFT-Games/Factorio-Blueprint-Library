@@ -6,89 +6,211 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>API Docs - Factorio Library</title>
+
+  <link rel="stylesheet" href="styles/docs.css">
 </head>
 
 <body>
   <h1>Factorio Blueprint Library API Docs</h1>
   <hr>
-  <h2>Login</h2>
-  <h3>/api/login</h3>
-  <ul>
-    <li>Methods: POST</li>
-    <li>
-      Body: 
+  <details>
+    <summary>
+      <h2>Login</h2>
+    </summary>
+    
+    <details>
+      <summary>
+        <h3>/api/login</h3>
+      </summary>
       <ul>
-        <li>Type: JSON</li>
-        <li>Structure: <code>{ username: string, password: string }</code></li>
+        <li>Methods: POST</li>
+        <li>
+          Body:
+          <ul>
+            <li>Type: JSON</li>
+            <li>Structure: <code>{ username: string, password: string }</code></li>
+          </ul>
+        </li>
+        <li>
+          Response:
+          <ul>
+            <li>Type: JSON</li>
+            <li>Structure: <code>{ key: string, expires: unix time value }</code></li>
+          </ul>
+        </li>
+        <li>
+          Description: Checks the provided username and password for a valid account and sends back a login token.
+        </li>
+        <li>
+          Changes to expect:
+          <ul>
+            <li>Add a 'trust this computer' bool</li>
+          </ul>
+        </li>
       </ul>
-    </li>
-    <li>
-      Response:
-      <ul>
-        <li>Type: JSON</li>
-        <li>Structure: <code>{}</code></li>
-      </ul>
-    </li>
-    <li>
-      Description: Checks the provided username and password for a valid account and sends back a login token.
-    </li>
-    <li>
-      Todo:
-      <ul>
-        <li>Add a 'trust this computer' bool</li>
-      </ul>
-    </li>
-  </ul>
+    </details>
 
-  <h3>/login/verify</h3>
-  <p>Requires a username and email.</p>
-  <p>
-    Checks if the username is used and returns an error if so, otherwise generates
-    a random code, emails it to the provided address and returns the the code
-    for the client to check against. This should be improved in the future since this does nothing to effectively stop
-    someone intentionally using someone elses email, it just makes sure that a normal user didn't mistype their recovery
-    email.
-  </p>
-  <p>
-    Returns the code for client to check user response against before
-    sending /login/new.
-  </p>
+    <details>
+      <summary>
+        <h3>/api/login/verify</h3>
+      </summary>
+      <ul>
+        <li>Methods: POST</li>
+        <li>
+          Body:
+          <ul>
+            <li>Type: JSON</li>
+            <li>Structure: <code>{ username: string, email: string }</code></li>
+          </ul>
+        </li>
+        <li>
+          Response:
+          <ul>
+            <li>Type: number</li>
+          </ul>
+        </li>
+        <li>
+          Description: Checks if a given username is taken and sends a verification code to the given email. Returns that same code for client side verification. <br> 
+          <strong>Note: </strong> This only protects against a user mistyping the email at signup. This does not protect against using someone elses email.
+        </li>
+        <li>
+          Changes to expect:
+          <ul>
+            <li>The entire login process may change for oauth to allow login with google</li>
+            <li>May change to instead enable an unverified account after taking in a code and checking against the correct code from database.</li>
+          </ul>
+        </li>
+      </ul>
+    </details>
 
-  <h3>/login/new</h3>
-  <p>Requires username, password, and an email.</p>
-  <p>
-    Check if a matching username exists and return an error if so, otherwise
-    crate a new user entry and generate new login key to be set and returned.
-  </p>
-  <p>Returns login key.</p>
+    <details>
+      <summary>
+        <h3>/api/login/new</h3>
+      </summary>
+      <ul>
+        <li>Methods: POST</li>
+        <li>
+          Body:
+          <ul>
+            <li>Type: JSON</li>
+            <li>Structure: <code>{ username: string, password: string, email: string }</code></li>
+          </ul>
+        </li>
+        <li>
+          Response:
+          <ul>
+            <li>Type: JSON</li>
+            <li>Structure: <code>{ key: string, expires: unix time value }</code></li>
+          </ul>
+        </li>
+        <li>
+          Description: Creates a new user and returns a login token.
+        </li>
+        <li>
+          Changes to expect:
+          <ul>
+            <li>May change to create an unverified account with a stored code and send verification email.</li>
+          </ul>
+        </li>
+      </ul>
+    </details>
+  </details>
+
   <hr>
-  <h2>Content</h2>
-  <h3>/content/favorites</h3>
-  <p>Requires a login key and page size or id and action.</p>
-  <p>
-    Gets the favorite Ids of the user, queries for each Ids entry and returns
-    all the entries or adds or removes a specified id from favorites.
-  </p>
-  <p>Returns favorite entries.</p>
 
-  <h3>/content/query</h3>
-  <p>Optional filter, optional sort, optional login key and Requires page limit.</p>
-  <p>
-    Performs a query with the given filter, limit, and sort and returns the
-    results. If a login key was given, also refreshes it and returns the new
-    key and their favorite Ids.
-  </p>
-  <p>Returns results, optionally favorites and login key.</p>
+  <details>
+    <summary>
+      <h2>Content</h2>
+    </summary>
 
-  <h3>/content/new</h3>
-  <p>Requires login key and object to enter.</p>
-  <p>
-    Checks the user of the login key and adds the object to the database if it is formatted properly.
-  </p>
-  <p>Returns if of added object login key.</p>
+    <details>
+      <summary>
+        <h3>/api/content/favorites</h3>
+      </summary>
+      <ul>
+        <li>Methods: POST</li>
+        <li>
+          Body:
+          <ul>
+            <li>Type: JSON</li>
+            <li>Structure: <code>{ limit: number, ids: [strings,] } or 
+              ( limit: number, login: { username: string, password: string } }</code> <br>
+            alternatively <code>{ id: string, action: string, login: { key: string, expires: unix time value } }</code></li>
+          </ul>
+        </li>
+        <li>
+          Response:
+          <ul>
+            <li>Type: JSON</li>
+            <li>Structure: <code>[{blueprints},]</code></li>
+          </ul>
+        </li>
+        <li>
+          Description: Takes in a limit and either an array of ids or a login token. Returns an array of blueprint objects from the given ids or the users saved favorites. Alternatively takes a login, id, and action to add or remove an id from user favorites.
+        </li>
+        <li>
+          Changes to expect:
+          <ul>
+            <li>Split into 2 endpoints or methods.</li>
+          </ul>
+        </li>
+      </ul>
+    </details>
 
-  <h3>maybe update and delete later</h3>
-  <h3>todo: add to favorites</h3>
+    <details>
+      <summary>
+        <h3>/api/content/query</h3>
+      </summary>
+      <ul>
+        <li>Methods: POST</li>
+        <li>
+          Body:
+          <ul>
+            <li>Type: JSON</li>
+            <li>Structure: <code>{ limit: number, (optional)filter: {MongoDB filter}, (optional)sort: {MongoDB sort}, (optional)login: { key string, expires: unix time value } }</code></li>
+          </ul>
+        </li>
+        <li>
+          Response:
+          <ul>
+            <li>Type: JSON</li>
+            <li>Structure: <code>{ content: [blueprints,], (optional)favorites: [strings,], (optional)login: { key: string, expires: unix time value } }</code></li>
+          </ul>
+        </li>
+        <li>
+          Description: Searches the database for blueprints matching an optional filter and sorts them by an optional metric. Also sends back the favorited IDs and a refreshed login token if logged in. 
+        </li>
+      </ul>
+    </details>
+
+    <details>
+      <summary>
+        <h3>/api/content/new</h3>
+      </summary>
+      <ul>
+        <li>Methods: POST</li>
+        <li>
+          Body:
+          <ul>
+            <li>Type: JSON</li>
+            <li>Structure: <code>{ login: { key: string, expires: unix time value }, content: {blueprint} }</code></li>
+          </ul>
+        </li>
+        <li>
+          Response:
+          <ul>
+            <li>Type: JSON</li>
+            <li>Structure: <code>string</code></li>
+          </ul>
+        </li>
+        <li>
+          Description: Takes a login and a blueprint and adds the blueprint to the database.
+        </li>
+      </ul>
+    </details>
+  </details>
+
+  define blueprint and maybe login
 </body>
 
 </html>

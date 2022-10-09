@@ -5,6 +5,8 @@ const http = require('http');
 const crypto = require('crypto');
 const exec = require('child_process').execSync;
 // TODO: should probably make the email a setting and verify connection
+// TODO: email a known good mail on setup to ensure its working
+// TODO: I guess set up better auth since google killed less secure apps in march
 const nodemailer = require('nodemailer').createTransport({
   service: 'gmail',
   auth: {
@@ -258,7 +260,7 @@ async function contentQuery(data, res) {
 const server = http.createServer((req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
 
-  // handle cors preflights from fetch
+  // handle cors preflights from fetch TODO: investigate why postman doesnt like the cors
   if (req.method === 'OPTIONS' && req.headers['access-control-request-method']) {
     res.statusCode = 204;
     res.setHeader('Access-Control-Allow-Methods', 'POST');
