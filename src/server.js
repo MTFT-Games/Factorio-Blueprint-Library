@@ -5,13 +5,16 @@ const http = require('http');
 const crypto = require('crypto');
 const exec = require('child_process').execSync;
 // TODO: should probably make the email a setting and verify connection
-// TODO: email a known good mail on setup to ensure its working
+// TODO: email a known good mail on setup to ensure its working or use .verify
 // TODO: I guess set up better auth since google killed less secure apps in march
+// TODO: Move the creation of the transport to the rest of the connection setup.
 const nodemailer = require('nodemailer').createTransport({
   service: 'gmail',
   auth: {
+    type: 'OAuth2',
     user: 'factoriolibrary@gmail.com',
-    pass: process.env.MAIL_PASS,
+    serviceClient: '117043537712628403792',
+    privateKey: process.env.MAIL_AUTH,
   },
 });
 const bcrypt = require('bcryptjs');
