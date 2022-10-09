@@ -20,11 +20,32 @@ const nodemailer = require('nodemailer').createTransport({
 const bcrypt = require('bcryptjs');
 const base64url = require('base64url');
 const database = require('./database.js');
+const fs = require('fs');
 // #endregion
 
 const secret = process.env.GITHUB_SECRET;
 
+// #region Settings
+// Read and parse settings file TODO: Print nice error if no settings file
+const settings = JSON.parse(fs.readFileSync(`${__dirname}/../settings.json`));
+
 const port = process.env.PORT || process.env.NODE_PORT || 3000;
+
+// Attempt to verify and set the webdir to serve from
+let webdir;
+try {
+  webdir = fs.realpathSync(`${__dirname}/../${process.env.NODE_WEBDIR || settings.webdir}`);
+} catch (error) {
+  // Log error and exit if web directory could not be established
+  if (error.code === 'NOENT') {
+    console.log(`[ERROR]: Webdir directory ${error.path} not found. `
+      + 'Check that webdir is set correctly in settings.json');
+  } else {
+    console.log(error);
+  }
+  process.exit(1);
+}
+// #endregion
 
 // TODO: Get rid of this. Make it a file.
 // TODO: Optimize await calls.
