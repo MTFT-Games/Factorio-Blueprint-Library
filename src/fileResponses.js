@@ -20,6 +20,10 @@ function serveFile(request, response, filePath) {
     contentType = utilities.determineType(request, ['text/css', 'text/plain']);
   } else if (fileExtension === '.js') {
     contentType = utilities.determineType(request, ['text/javascript', 'text/plain']);
+  } else if (fileExtension === '.jpg' || fileExtension === '.jpeg') {
+    contentType = utilities.determineType(request, ['image/jpeg']);
+  } else if (fileExtension === '.png') {
+    contentType = utilities.determineType(request, ['image/png']);
   } else {
     // 415 code, unsupported media type
     return utilities.sendCode(
