@@ -104,6 +104,60 @@ function sendCode(request, response, code, id, message) {
   response.end();
 }
 
+/**
+ * Parses a POST body to json.
+ * @param {*} request The client request object.
+ * @param {*} response The server response object.
+ * @param {Function} callback A function to call after parsing.
+ */
+function parseBody(request, response, callback) {
+  if (request.method !== 'POST') {
+    sendCode(
+      request,
+      response,
+      405,
+      '405PostOnly',
+      'This endpoint only supports POST requests.',
+    );
+    return;
+  }
+
+  const body = [];
+
+  request.on('error', () => {
+    sendCode(
+      request,
+      response,
+      400,
+      '400PostBody',
+      'Error when receiving post body.',
+    );
+  });
+
+  request.on('data', (chunk) => {
+    body.push(chunk);
+  });
+
+  request.on('end', () => {
+    let json;
+    try {
+      json = JSON.parse(Buffer.concat(body).toString());
+    } catch (error) {
+      sendCode(
+        request,
+        response,
+        400,
+        '400BadJson',
+        'Request body could not be parsed to JSON.',
+      );
+      return;
+    }
+    
+    callback(request, response, json);
+  });
+  return;
+}
+
 module.exports = {
-  checkValidFile, determineType, jsonToXml, sendCode,
+  checkValidFile, determineType, jsonToXml, sendCode, parseBody,
 };

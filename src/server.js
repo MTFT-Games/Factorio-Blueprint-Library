@@ -63,7 +63,8 @@ function generateToken(data) {
 }
 
 // Async function to check if a username is valid and send an email to verify the email
-async function verify(data, res) {
+async function verify(req, res, data) {
+  res.setHeader('Content-Type', 'text/html');
   if (await database.readUser(data.username)) {
     res.statusCode = 409;
     res.end('Username taken');
@@ -88,69 +89,78 @@ async function verify(data, res) {
 }
 
 // Async function to confirm a free user and create a new account
-async function createUser(data, res) {
-  if (await database.readUser(data.username)) {
-    res.statusCode = 409;
-    res.end('Username taken');
-  } else {
-    const passHash = bcrypt.hash(data.password, 10);
-    const generatedLogin = generateToken(data);
-    await database.createUser(data.username, await passHash, data.email, generatedLogin);
-    res.statusCode = 200;
-    res.end(JSON.stringify(generatedLogin));
+async function createUser(req, res, data) {
+  if (json.username && json.password && json.email) {
+    res.setHeader('Content-Type', 'application/json');
+    if (await database.readUser(data.username)) {
+      res.statusCode = 409;
+      res.end('Username taken');
+    } else {
+      const passHash = bcrypt.hash(data.password, 10);
+      const generatedLogin = generateToken(data);
+      await database.createUser(data.username, await passHash, data.email, generatedLogin);
+      res.statusCode = 200;
+      res.end(JSON.stringify(generatedLogin));
+    }
   }
 }
 
-async function login(data, res) {
-  // Check username
-  const user = await database.readUser(data.username);
-  if (user) {
-    // Check password
-    if (await bcrypt.compare(data.password, user.password)) {
-      // Generate token
-      const token = generateToken(data);
+async function login(req, res, data) {
+  if (json.username && json.password) {
+    res.setHeader('Content-Type', 'application/json');
+    // Check username
+    const user = await database.readUser(data.username);
+    if (user) {
+      // Check password
+      if (await bcrypt.compare(data.password, user.password)) {
+        // Generate token
+        const token = generateToken(data);
 
-      // Set token in db
-      await database.updateLogin(data.username, token);
+        // Set token in db
+        await database.updateLogin(data.username, token);
 
-      // return
-      res.statusCode = 200;
-      res.end(JSON.stringify(token));
+        // return
+        res.statusCode = 200;
+        res.end(JSON.stringify(token));
+      } else {
+        res.statusCode = 401;
+        res.end('Invalid username or password');
+      }
     } else {
       res.statusCode = 401;
       res.end('Invalid username or password');
     }
-  } else {
-    res.statusCode = 401;
-    res.end('Invalid username or password');
   }
 }
 
-async function addEntry(data, res) {
-  const user = await database.readUserByLogin(data.login);
-  // auth
-  if (user && user.login.expires > Date.now()) {
-    // check that the client formatted it properly
-    if (data.content.author === user.username
-      && data.content.favorites === 0
-      && (data.content.type === 'blueprint_book' || data.content.type === 'blueprint')
-      && data.content.content
-      && data.content.exportString) {
-      const result = await database.createBlueprint(data.content);
-      if (result.insertedId) {
-        res.statusCode = 200;
-        res.end(JSON.stringify(result.insertedId));
+async function addEntry(req, res, data) {
+  if (json.login && json.content) {
+    res.setHeader('Content-Type', 'application/json');
+    const user = await database.readUserByLogin(data.login);
+    // auth
+    if (user && user.login.expires > Date.now()) {
+      // check that the client formatted it properly
+      if (data.content.author === user.username
+        && data.content.favorites === 0
+        && (data.content.type === 'blueprint_book' || data.content.type === 'blueprint')
+        && data.content.content
+        && data.content.exportString) {
+        const result = await database.createBlueprint(data.content);
+        if (result.insertedId) {
+          res.statusCode = 200;
+          res.end(JSON.stringify(result.insertedId));
+        } else {
+          res.statusCode = 500;
+          res.end('Error adding new data');
+        }
       } else {
-        res.statusCode = 500;
-        res.end('Error adding new data');
+        res.statusCode = 400;
+        res.end('Badly formatted data');
       }
     } else {
-      res.statusCode = 400;
-      res.end('Badly formatted data');
+      res.statusCode = 401;
+      res.end('Invalid or expired login key');
     }
-  } else {
-    res.statusCode = 401;
-    res.end('Invalid or expired login key');
   }
 }
 
@@ -193,156 +203,56 @@ async function editFavorites(data, res) {
   }
 }
 
-async function contentQuery(data, res) {
-  const output = {};
+async function contentQuery(req, res, data) {
+  if (json.limit) {
+    const output = {};
 
-  // Check login and get favorites
-  if (data.login) {
-    const user = await database.readUserByLogin(data.login);
-    if (user) {
-      output.favorites = user.favorites;
+    // Check login and get favorites
+    if (data.login) {
+      const user = await database.readUserByLogin(data.login);
+      if (user) {
+        output.favorites = user.favorites;
 
-      const token = generateToken(data);
+        const token = generateToken(data);
 
-      // Set token in db
-      await database.updateLoginByToken(data.login, token);
+        // Set token in db
+        await database.updateLoginByToken(data.login, token);
 
-      output.login = token;
+        output.login = token;
+      } else {
+        output.favorites = 'Invalid login';
+      }
     } else {
-      output.favorites = 'Invalid login';
+      output.favorites = 'Not logged in';
     }
-  } else {
-    output.favorites = 'Not logged in';
-  }
 
-  output.content = await database.readBlueprints(data.filter, data.sort, data.limit);
-  res.statusCode = 200;
-  res.end(JSON.stringify(output));
+    output.content = await database.readBlueprints(data.filter, data.sort, data.limit);
+    res.statusCode = 200;
+    res.end(JSON.stringify(output));
+  }
 }
 
 // Struct to manage any cases that should be handled in a specific way
 const specialCases = {
   '/': (request, response) => fileResponses.serveFile(request, response, `${webdir}/home.html`),
-  '/api/': (request, response) => fileResponses.serveFile(request, response, `${webdir}/apidocs.html`),
-  '/api/login/verify': (req, res) => {
-    res.setHeader('Content-Type', 'text/html');
-    let data = '';
-    req.on('data', (chunk) => {
-      data += chunk;
-    });
-    req.on('end', () => {
-      try {
-        verify(JSON.parse(data), res);
-      } catch (error) {
-        console.log(`Error: ${error}`);
-        console.log(`Data: ${data}`);
-      }
-    });
-  },
-  '/api/login/new': (req, res) => {
-    res.setHeader('Content-Type', 'application/json');
-    let data = '';
-    req.on('data', (chunk) => {
-      data += chunk;
-    });
-    req.on('end', () => {
-      try {
-        const json = JSON.parse(data);
-        if (json.username && json.password && json.email) {
-          createUser(json, res);
-        }
-      } catch (error) {
-        console.log(`Error: ${error}`);
-        console.log(`Data: ${data}`);
-      }
-    });
-  },
-  '/api/login': (req, res) => {
-    res.setHeader('Content-Type', 'application/json');
-    let data = '';
-    req.on('data', (chunk) => {
-      data += chunk;
-    });
-    req.on('end', () => {
-      try {
-        const json = JSON.parse(data);
-        if (json.username && json.password) {
-          login(json, res);
-        }
-      } catch (error) {
-        console.log(`Error: ${error}`);
-        console.log(`Data: ${data}`);
-      }
-    });
-  },
-  '/api/content/new': (req, res) => {
-    res.setHeader('Content-Type', 'application/json');
-    let data = '';
-    req.on('data', (chunk) => {
-      data += chunk;
-    });
-    req.on('end', () => {
-      try {
-        const json = JSON.parse(data);
-        if (json.login && json.content) {
-          addEntry(json, res);
-        } else {
-          res.statusCode = 500;
-          res.end('malformed data');
-        }
-      } catch (error) {
-        console.log(`Error: ${error}`);
-        console.log(`Data: ${data}`);
-        res.statusCode = 500;
-        res.end('caught exception');
-      }
-    });
-  },
-  '/api/content/query': (req, res) => {
-    let data = '';
-    req.on('data', (chunk) => {
-      data += chunk;
-    });
-    req.on('end', () => {
-      try {
-        const json = JSON.parse(data);
-        if (json.limit) {
-          contentQuery(json, res);
-        } else {
-          res.statusCode = 500;
-          res.end('malformed data');
-        }
-      } catch (error) {
-        console.log(`Error: ${error}`);
-        console.log(`Data: ${data}`);
-        res.statusCode = 500;
-        res.end('caught exception');
-      }
-    });
-  },
+  '/api/': (request, response) =>
+    fileResponses.serveFile(request, response, `${webdir}/apidocs.html`),
+  '/api/login/verify': (req, res) => utilities.parseBody(req, res, verify),
+  '/api/login/new': (req, res) => utilities.parseBody(req, res, createUser),
+  '/api/login': (req, res) => utilities.parseBody(req, res, login),
+  '/api/content/new': (req, res) => utilities.parseBody(req, res, addEntry),
+  '/api/content/query': (req, res) => utilities.parseBody(req, res, contentQuery),
   '/content/favorites': (req, res) => {
-    let data = '';
-    req.on('data', (chunk) => {
-      data += chunk;
-    });
-    req.on('end', () => {
-      try {
-        const json = JSON.parse(data);
-        if (json.limit && (json.login || json.ids)) {
-          queryFavorites(json, res);
-        } else if (json.id && json.action && json.login) {
-          editFavorites(json, res);
-        } else {
-          res.statusCode = 500;
-          res.end('malformed data');
-        }
-      } catch (error) {
-        console.log(`Error: ${error}`);
-        console.log(`Data: ${data}`);
+    utilities.parseBody(req, res, (req, res, data) => {
+      if (data.limit && (data.login || data.ids)) {
+        queryFavorites(json, res);
+      } else if (data.id && data.action && data.login) {
+        editFavorites(json, res);
+      } else {
         res.statusCode = 500;
-        res.end('caught exception');
+        res.end('malformed data');
       }
-    });
+    })
   },
 };
 
