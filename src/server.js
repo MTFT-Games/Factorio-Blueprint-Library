@@ -3,7 +3,6 @@
 require('dotenv').config();
 const http = require('http');
 const crypto = require('crypto');
-const exec = require('child_process').execSync;
 // TODO: should probably make the email a setting and verify connection
 // TODO: email a known good mail on setup to ensure its working or use .verify
 // TODO: I guess set up better auth since google killed less secure apps in march
@@ -20,7 +19,10 @@ const nodemailer = require('nodemailer').createTransport({
 const bcrypt = require('bcryptjs');
 const base64url = require('base64url');
 const fs = require('fs');
+const path = require('path').posix;
 const database = require('./database.js');
+const utilities = require('./utilities.js');
+const fileResponses = require('./fileResponses.js');
 // #endregion
 
 const secret = process.env.GITHUB_SECRET;
@@ -48,7 +50,6 @@ try {
 // #endregion
 
 // TODO: Optimize await calls.
-const docs = fs.readFileSync(`${webdir}/apidocs.html`);
 
 function generateToken(data) {
   const requestTime = Date.now();
@@ -219,186 +220,154 @@ async function contentQuery(data, res) {
   res.end(JSON.stringify(output));
 }
 
-const server = http.createServer((req, res) => {
-  res.setHeader('Access-Control-Allow-Origin', '*');
+// Struct to manage any cases that should be handled in a specific way
+const specialCases = {
+  '/': (request, response) => fileResponses.serveFile(request, response, `${webdir}/home.html`),
+  '/api/': (request, response) => fileResponses.serveFile(request, response, `${webdir}/apidocs.html`),
+  '/api/login/verify': (req, res) => {
+    res.setHeader('Content-Type', 'text/html');
+    let data = '';
+    req.on('data', (chunk) => {
+      data += chunk;
+    });
+    req.on('end', () => {
+      try {
+        verify(JSON.parse(data), res);
+      } catch (error) {
+        console.log(`Error: ${error}`);
+        console.log(`Data: ${data}`);
+      }
+    });
+  },
+  '/api/login/new': (req, res) => {
+    res.setHeader('Content-Type', 'application/json');
+    let data = '';
+    req.on('data', (chunk) => {
+      data += chunk;
+    });
+    req.on('end', () => {
+      try {
+        const json = JSON.parse(data);
+        if (json.username && json.password && json.email) {
+          createUser(json, res);
+        }
+      } catch (error) {
+        console.log(`Error: ${error}`);
+        console.log(`Data: ${data}`);
+      }
+    });
+  },
+  '/api/login': (req, res) => {
+    res.setHeader('Content-Type', 'application/json');
+    let data = '';
+    req.on('data', (chunk) => {
+      data += chunk;
+    });
+    req.on('end', () => {
+      try {
+        const json = JSON.parse(data);
+        if (json.username && json.password) {
+          login(json, res);
+        }
+      } catch (error) {
+        console.log(`Error: ${error}`);
+        console.log(`Data: ${data}`);
+      }
+    });
+  },
+  '/api/content/new': (req, res) => {
+    res.setHeader('Content-Type', 'application/json');
+    let data = '';
+    req.on('data', (chunk) => {
+      data += chunk;
+    });
+    req.on('end', () => {
+      try {
+        const json = JSON.parse(data);
+        if (json.login && json.content) {
+          addEntry(json, res);
+        } else {
+          res.statusCode = 500;
+          res.end('malformed data');
+        }
+      } catch (error) {
+        console.log(`Error: ${error}`);
+        console.log(`Data: ${data}`);
+        res.statusCode = 500;
+        res.end('caught exception');
+      }
+    });
+  },
+  '/api/content/query': (req, res) => {
+    let data = '';
+    req.on('data', (chunk) => {
+      data += chunk;
+    });
+    req.on('end', () => {
+      try {
+        const json = JSON.parse(data);
+        if (json.limit) {
+          contentQuery(json, res);
+        } else {
+          res.statusCode = 500;
+          res.end('malformed data');
+        }
+      } catch (error) {
+        console.log(`Error: ${error}`);
+        console.log(`Data: ${data}`);
+        res.statusCode = 500;
+        res.end('caught exception');
+      }
+    });
+  },
+  '/content/favorites': (req, res) => {
+    let data = '';
+    req.on('data', (chunk) => {
+      data += chunk;
+    });
+    req.on('end', () => {
+      try {
+        const json = JSON.parse(data);
+        if (json.limit && (json.login || json.ids)) {
+          queryFavorites(json, res);
+        } else if (json.id && json.action && json.login) {
+          editFavorites(json, res);
+        } else {
+          res.statusCode = 500;
+          res.end('malformed data');
+        }
+      } catch (error) {
+        console.log(`Error: ${error}`);
+        console.log(`Data: ${data}`);
+        res.statusCode = 500;
+        res.end('caught exception');
+      }
+    });
+  },
+};
 
-  // handle cors preflights from fetch TODO: investigate why postman doesnt like the cors
-  if (req.method === 'OPTIONS' && req.headers['access-control-request-method']) {
-    res.statusCode = 204;
-    res.setHeader('Access-Control-Allow-Methods', 'POST');
-    res.setHeader('Access-Control-Allow-Headers', 'content-type');
-    res.end();
-    return;
+function onRequest(request, response) {
+  const parsedUrl = new URL(request.url, `http://${request.headers.host}`);
+  const resolvedPath = path.normalize(parsedUrl.pathname);
+
+  // Check if the requested resource is a special case
+  if (specialCases[resolvedPath]) {
+    specialCases[resolvedPath](request, response, parsedUrl.searchParams);
+  } else if ((request.method === 'GET' || request.method === 'HEAD') && utilities.checkValidFile(webdir + resolvedPath)) {
+    // If a file exists at the requested path, get it.
+    fileResponses.serveFile(request, response, webdir + resolvedPath);
+  } else {
+    utilities.sendCode(
+      request,
+      response,
+      404,
+      '404NotFound',
+      'The page or resource you have requested does not exist.',
+    );
   }
+}
 
-  switch (req.url) {
-    // Docs page describing functions and usage
-    case '/':
-      res.setHeader('Content-Type', 'text/html');
-      res.statusCode = 200;
-      res.end(docs);
-      break;
-
-    // Check if a username is valid and sends an email to verify the email
-    case '/login/verify': {
-      res.setHeader('Content-Type', 'text/html');
-      let data = '';
-      req.on('data', (chunk) => {
-        data += chunk;
-      });
-      req.on('end', () => {
-        try {
-          verify(JSON.parse(data), res);
-        } catch (error) {
-          console.log(`Error: ${error}`);
-          console.log(`Data: ${data}`);
-        }
-      });
-      break;
-    }
-    // Double checks username validity and creates a new user, returning a login key.
-    case '/login/new': {
-      res.setHeader('Content-Type', 'application/json');
-      let data = '';
-      req.on('data', (chunk) => {
-        data += chunk;
-      });
-      req.on('end', () => {
-        try {
-          const json = JSON.parse(data);
-          if (json.username && json.password && json.email) {
-            createUser(json, res);
-          }
-        } catch (error) {
-          console.log(`Error: ${error}`);
-          console.log(`Data: ${data}`);
-        }
-      });
-      break;
-    }
-    // Checks username and password hash and returns a login key.
-    case '/login': {
-      res.setHeader('Content-Type', 'application/json');
-      let data = '';
-      req.on('data', (chunk) => {
-        data += chunk;
-      });
-      req.on('end', () => {
-        try {
-          const json = JSON.parse(data);
-          if (json.username && json.password) {
-            login(json, res);
-          }
-        } catch (error) {
-          console.log(`Error: ${error}`);
-          console.log(`Data: ${data}`);
-        }
-      });
-      break;
-    }
-    // Checks the user of the login key and adds the object to the database
-    // if it is formatted properly.
-    case '/content/new': {
-      res.setHeader('Content-Type', 'application/json');
-      let data = '';
-      req.on('data', (chunk) => {
-        data += chunk;
-      });
-      req.on('end', () => {
-        try {
-          const json = JSON.parse(data);
-          if (json.login && json.content) {
-            addEntry(json, res);
-          } else {
-            res.statusCode = 500;
-            res.end('malformed data');
-          }
-        } catch (error) {
-          console.log(`Error: ${error}`);
-          console.log(`Data: ${data}`);
-          res.statusCode = 500;
-          res.end('caught exception');
-        }
-      });
-      break;
-    }
-    case '/content/query': {
-      let data = '';
-      req.on('data', (chunk) => {
-        data += chunk;
-      });
-      req.on('end', () => {
-        try {
-          const json = JSON.parse(data);
-          if (json.limit) {
-            contentQuery(json, res);
-          } else {
-            res.statusCode = 500;
-            res.end('malformed data');
-          }
-        } catch (error) {
-          console.log(`Error: ${error}`);
-          console.log(`Data: ${data}`);
-          res.statusCode = 500;
-          res.end('caught exception');
-        }
-      });
-      break;
-    }
-    case '/content/favorites': {
-      let data = '';
-      req.on('data', (chunk) => {
-        data += chunk;
-      });
-      req.on('end', () => {
-        try {
-          const json = JSON.parse(data);
-          if (json.limit && (json.login || json.ids)) {
-            queryFavorites(json, res);
-          } else if (json.id && json.action && json.login) {
-            editFavorites(json, res);
-          } else {
-            res.statusCode = 500;
-            res.end('malformed data');
-          }
-        } catch (error) {
-          console.log(`Error: ${error}`);
-          console.log(`Data: ${data}`);
-          res.statusCode = 500;
-          res.end('caught exception');
-        }
-      });
-      break;
-    }
-    // Pull the git repo when github hebhook is received
-    case '/git': {
-      res.setHeader('Content-Type', 'text/html');
-      req.on('data', (chunk) => {
-        const signature = `sha1=${crypto.createHmac('sha1', secret).update(chunk.toString()).digest('hex')}`;
-
-        // Check for valid signature
-        if (req.headers['x-hub-signature'] === signature) {
-          res.statusCode = 200;
-          res.end();
-          exec('cd /var/www/factorio-library && git pull'); // Pull from github
-          // End the process so systemd restarts it with the new version pulled from git
-          process.kill(process.pid, 'SIGTERM');
-        }
-      });
-
-      res.statusCode = 200;
-      res.end('Git pull attempted v4');
-      break;
-    }
-    // Anything else is not a valid endpoint
-    default:
-      res.setHeader('Content-Type', 'text/html');
-      res.statusCode = 404;
-      res.setHeader('Content-Type', 'text/html');
-      res.end(`<h1>${req.url} is not a valid endpoint.</h1>`);
-      break;
-  }
-});
+const server = http.createServer(onRequest);
 
 database.connectMongo();
 
