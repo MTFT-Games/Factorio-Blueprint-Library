@@ -2,9 +2,7 @@
 // #region Requires
 require('dotenv').config();
 const http = require('http');
-const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
-const base64url = require('base64url');
 const fs = require('fs');
 const path = require('path').posix;
 const database = require('./database.js');
@@ -12,8 +10,6 @@ const utilities = require('./utilities.js');
 const fileResponses = require('./fileResponses.js');
 const login = require('./login.js');
 // #endregion
-
-const secret = process.env.GITHUB_SECRET;
 
 // #region Settings
 // Read and parse settings file TODO: Print nice error if no settings file
@@ -39,17 +35,6 @@ try {
 
 // TODO: Optimize await calls.
 
-function generateToken(data) {
-  const requestTime = Date.now();
-  const generatedLogin = { key: '', expires: requestTime + 1200000 };
-  const payload = JSON.stringify({ username: data.username, iat: requestTime });
-  const signature = crypto.createHmac('sha256', secret).update(base64url(payload)).digest('hex');
-  const token = `${base64url(payload)}.${base64url(signature)}`;
-  generatedLogin.key = token;
-
-  return generatedLogin;
-}
-
 // Async function to confirm a free user and create a new account
 async function createUser(req, res, data) {
   if (data.username && data.password && data.email) {
@@ -59,38 +44,10 @@ async function createUser(req, res, data) {
       res.end('Username taken');
     } else {
       const passHash = bcrypt.hash(data.password, 10);
-      const generatedLogin = generateToken(data);
+      const generatedLogin = login.generateToken(data.username);
       await database.createUser(data.username, await passHash, data.email, generatedLogin);
       res.statusCode = 200;
       res.end(JSON.stringify(generatedLogin));
-    }
-  }
-}
-
-async function loginFunc(req, res, data) {
-  if (data.username && data.password) {
-    res.setHeader('Content-Type', 'application/json');
-    // Check username
-    const user = await database.readUser(data.username);
-    if (user) {
-      // Check password
-      if (await bcrypt.compare(data.password, user.password)) {
-        // Generate token
-        const token = generateToken(data);
-
-        // Set token in db
-        await database.updateLogin(data.username, token);
-
-        // return
-        res.statusCode = 200;
-        res.end(JSON.stringify(token));
-      } else {
-        res.statusCode = 401;
-        res.end('Invalid username or password');
-      }
-    } else {
-      res.statusCode = 401;
-      res.end('Invalid username or password');
     }
   }
 }
@@ -175,7 +132,7 @@ async function contentQuery(req, res, data) {
       if (user) {
         output.favorites = user.favorites;
 
-        const token = generateToken(data);
+        const token = login.generateToken(data.username);
 
         // Set token in db
         await database.updateLoginByToken(data.login, token);
@@ -200,7 +157,7 @@ const specialCases = {
   '/api/': (request, response) => fileResponses.serveFile(request, response, `${webdir}/apidocs.html`),
   '/api/login/verify': (req, res) => utilities.parseBody(req, res, login.verify),
   '/api/login/new': (req, res) => utilities.parseBody(req, res, createUser),
-  '/api/login': (req, res) => utilities.parseBody(req, res, loginFunc),
+  '/api/login': (req, res) => utilities.parseBody(req, res, login.login),
   '/api/content/new': (req, res) => utilities.parseBody(req, res, addEntry),
   '/api/content/query': (req, res) => utilities.parseBody(req, res, contentQuery),
   '/api/content/favorites': (req, res) => {

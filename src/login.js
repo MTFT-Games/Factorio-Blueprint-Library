@@ -1,7 +1,8 @@
-// TODO: should probably make the email a setting
-// TODO: email a known good mail on setup to ensure its working or use .verify
-// TODO: Figure out another mailing solution since google is being difficult
-// TODO: Move the creation of the transport to the rest of the connection setup.
+/* TODO: should probably make the email a setting
+   TODO: email a known good mail on setup to ensure its working or use .verify
+   TODO: Figure out another mailing solution since google is being difficult
+   TODO: Move the creation of the transport to the rest of the connection setup. */
+// #region Requires
 const nodemailer = require('nodemailer').createTransport({
   service: 'gmail',
   auth: {
@@ -11,8 +12,13 @@ const nodemailer = require('nodemailer').createTransport({
     privateKey: process.env.MAIL_AUTH,
   },
 });
-const database = require('./database.js');
+// TODO: Do I need both of these?
+const bcrypt = require('bcryptjs');
+const crypto = require('crypto');
+const base64url = require('base64url');
 const utilities = require('./utilities.js');
+const database = require('./database.js');
+// #endregion
 
 /*
 The login process is summarized as follows:
@@ -22,7 +28,6 @@ Then the account should be created with new. And the initial login can be used.
 In further sessions, login can be used to gain a new login token.
 */
 
-// Async function to check if a username is valid and send an email to verify the email
 /**
  * Checks that a username is available and sends an email with a code also sent
  * to the client to verify client-side the email is correct.
@@ -81,4 +86,66 @@ async function verify(request, response, data) {
   });
 }
 
-module.exports = { verify };
+/**
+ * Generates a login token based on the request time and username.
+ * @param {string} username The username making the token.
+ * @returns Login token.
+ */
+function generateToken(username) {
+  const requestTime = Date.now();
+  // Expire in 20 mins
+  const generatedLogin = { key: '', expires: requestTime + 1200000 };
+  const payload = JSON.stringify({ username, iat: requestTime });
+  // I forget what I was doing here... this line is likely from an outside resource.
+  const signature = crypto.createHmac('sha256', process.env.SECRET).update(base64url(payload)).digest('hex');
+  const token = `${base64url(payload)}.${base64url(signature)}`;
+  generatedLogin.key = token;
+
+  return generatedLogin;
+}
+
+/**
+ * Checks given username and password and sends back a login token.
+ * @param {*} request The client request object.
+ * @param {*} response The server response object.
+ * @param {object} data POST body in JSON.
+ */
+async function login(request, response, data) {
+  // TODO: Enable login by email as well as username
+  // Guard against missing data
+  if (!data.username || !data.password) {
+    utilities.sendCode(
+      request,
+      response,
+      400,
+      '400MissingFields',
+      'This endpoint requires both username and password fields.',
+    );
+    return;
+  }
+
+  const user = await database.readUser(data.username);
+
+  // Guard against invalid credentials
+  if (!user || !await bcrypt.compare(data.password, user.password)) {
+    utilities.sendCode(
+      request,
+      response,
+      401,
+      '401InvalidUserOrPass',
+      'The username and/or password you entered are incorrect.',
+    );
+    return;
+  }
+
+  // Create login data
+  const token = generateToken(data.username);
+  await database.updateLogin(data.username, token);
+
+  // Send token back in response
+  // TODO: change sendcode to sendjson and use that. change client to expect json.
+  response.writeHead(200, { 'Content-Type': 'application/json' });
+  response.end(JSON.stringify(token));
+}
+
+module.exports = { verify, login, generateToken };
