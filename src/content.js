@@ -1,5 +1,6 @@
 const database = require('./database.js');
 const utilities = require('./utilities.js');
+const login = require('./login.js');
 
 /**
  * Checks format of provided data and enters it into the database.
@@ -163,4 +164,59 @@ async function editFavorites(request, response, data) {
   response.end();
 }
 
-module.exports = { addEntry, queryFavorites, editFavorites };
+/**
+ * Responds with user favorites list if available and all found blueprints of
+ * the given filter up to the limit provided.
+ * @param {*} request The client request object.
+ * @param {*} response The server response object.
+ * @param {object} data POST body in JSON.
+ */
+async function contentQuery(request, response, data) {
+  // Guard against missing data
+  if (!data.limit) {
+    utilities.sendCode(
+      request,
+      response,
+      400,
+      '400MissingFields',
+      'This endpoint requires the limit field.',
+    );
+    return;
+  }
+
+  const output = { favorites: 'Not logged in' };
+
+  // Get favorites from user if logged in
+  if (data.login) {
+    const user = await database.readUserByLogin(data.login);
+
+    // Guard against invalid or expired login
+    if (!user || user.login.expires < Date.now()) {
+      utilities.sendCode(
+        request,
+        response,
+        401,
+        '401InvalidOrExpired',
+        'The login provided is invalid or expired.',
+      );
+      return;
+    }
+
+    output.favorites = user.favorites;
+
+    // Refresh login token
+    const token = login.generateToken(data.username);
+    await database.updateLoginByToken(data.login, token);
+    output.login = token;
+  }
+
+  output.content = await database.readBlueprints(data.filter, data.sort, data.limit);
+
+  // Respond with results
+  response.writeHead(200, { 'Content-Type': 'application/json' });
+  response.end(JSON.stringify(output));
+}
+
+module.exports = {
+  addEntry, queryFavorites, editFavorites, contentQuery,
+};

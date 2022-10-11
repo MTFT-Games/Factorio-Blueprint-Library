@@ -35,35 +35,6 @@ try {
 
 // TODO: Optimize await calls.
 
-async function contentQuery(req, res, data) {
-  if (data.limit) {
-    const output = {};
-
-    // Check login and get favorites
-    if (data.login) {
-      const user = await database.readUserByLogin(data.login);
-      if (user) {
-        output.favorites = user.favorites;
-
-        const token = login.generateToken(data.username);
-
-        // Set token in db
-        await database.updateLoginByToken(data.login, token);
-
-        output.login = token;
-      } else {
-        output.favorites = 'Invalid login';
-      }
-    } else {
-      output.favorites = 'Not logged in';
-    }
-
-    output.content = await database.readBlueprints(data.filter, data.sort, data.limit);
-    res.statusCode = 200;
-    res.end(JSON.stringify(output));
-  }
-}
-
 // Struct to manage any cases that should be handled in a specific way
 const specialCases = {
   '/': (request, response) => fileResponses.serveFile(request, response, `${webdir}/home.html`),
@@ -72,7 +43,7 @@ const specialCases = {
   '/api/login/new': (req, res) => utilities.parseBody(req, res, login.createUser),
   '/api/login': (req, res) => utilities.parseBody(req, res, login.login),
   '/api/content/new': (req, res) => utilities.parseBody(req, res, content.addEntry),
-  '/api/content/query': (req, res) => utilities.parseBody(req, res, contentQuery),
+  '/api/content/query': (req, res) => utilities.parseBody(req, res, content.contentQuery),
   '/api/content/favorites': (req, res) => {
     utilities.parseBody(req, res, (request, response, data) => {
       if (data.limit && (data.login || data.ids)) {
