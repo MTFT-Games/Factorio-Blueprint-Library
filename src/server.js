@@ -8,6 +8,7 @@ const database = require('./database.js');
 const utilities = require('./utilities.js');
 const fileResponses = require('./fileResponses.js');
 const login = require('./login.js');
+const content = require('./content.js');
 // #endregion
 
 // #region Settings
@@ -33,37 +34,6 @@ try {
 // #endregion
 
 // TODO: Optimize await calls.
-
-async function addEntry(req, res, data) {
-  if (data.login && data.content) {
-    res.setHeader('Content-Type', 'application/json');
-    const user = await database.readUserByLogin(data.login);
-    // auth
-    if (user && user.login.expires > Date.now()) {
-      // check that the client formatted it properly
-      if (data.content.author === user.username
-        && data.content.favorites === 0
-        && (data.content.type === 'blueprint_book' || data.content.type === 'blueprint')
-        && data.content.content
-        && data.content.exportString) {
-        const result = await database.createBlueprint(data.content);
-        if (result.insertedId) {
-          res.statusCode = 200;
-          res.end(JSON.stringify(result.insertedId));
-        } else {
-          res.statusCode = 500;
-          res.end('Error adding new data');
-        }
-      } else {
-        res.statusCode = 400;
-        res.end('Badly formatted data');
-      }
-    } else {
-      res.statusCode = 401;
-      res.end('Invalid or expired login key');
-    }
-  }
-}
 
 async function queryFavorites(data, res) {
   let favoriteIds;
@@ -140,7 +110,7 @@ const specialCases = {
   '/api/login/verify': (req, res) => utilities.parseBody(req, res, login.verify),
   '/api/login/new': (req, res) => utilities.parseBody(req, res, login.createUser),
   '/api/login': (req, res) => utilities.parseBody(req, res, login.login),
-  '/api/content/new': (req, res) => utilities.parseBody(req, res, addEntry),
+  '/api/content/new': (req, res) => utilities.parseBody(req, res, content.addEntry),
   '/api/content/query': (req, res) => utilities.parseBody(req, res, contentQuery),
   '/api/content/favorites': (req, res) => {
     utilities.parseBody(req, res, (request, response, data) => {
