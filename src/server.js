@@ -35,25 +35,6 @@ try {
 
 // TODO: Optimize await calls.
 
-async function editFavorites(data, res) {
-  const user = await database.readUserByLogin(data.login);
-  // auth
-  if (user && user.login.expires > Date.now()) {
-    if (data.action === 'add' && !user.favorites.includes(data.id)) {
-      await database.updateUserFavorites(data.login, data.id, true);
-      await database.updateFavoriteCount(data.id, 1);
-    } else if (user.favorites.includes(data.id)) {
-      await database.updateUserFavorites(data.login, data.id, false);
-      await database.updateFavoriteCount(data.id, -1);
-    }
-    res.statusCode = 200;
-    res.end();
-  } else {
-    res.statusCode = 401;
-    res.end('Invalid or expired login key');
-  }
-}
-
 async function contentQuery(req, res, data) {
   if (data.limit) {
     const output = {};
@@ -97,10 +78,16 @@ const specialCases = {
       if (data.limit && (data.login || data.ids)) {
         content.queryFavorites(request, response, data);
       } else if (data.id && data.action && data.login) {
-        editFavorites(data, response);
+        content.editFavorites(request, response, data);
       } else {
-        response.statusCode = 500;
-        response.end('malformed data');
+        utilities.sendCode(
+          request,
+          response,
+          400,
+          '400MissingFields',
+          'This endpoint requires either (limit and either login or ids) or '
+          + '(id, action, and login) fields.',
+        );
       }
     });
   },

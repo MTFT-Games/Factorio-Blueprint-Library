@@ -117,4 +117,50 @@ async function queryFavorites(request, response, data) {
   response.end(JSON.stringify(output));
 }
 
-module.exports = { addEntry, queryFavorites };
+/**
+ * Increments or decrements the favorite count of a given blueprint.
+ * @param {*} request The client request object.
+ * @param {*} response The server response object.
+ * @param {object} data POST body in JSON.
+ */
+async function editFavorites(request, response, data) {
+  // Guard against missing data
+  if (!data.id || !data.action || !data.login) {
+    utilities.sendCode(
+      request,
+      response,
+      400,
+      '400MissingFields',
+      'This endpoint requires id, login, and action fields.',
+    );
+    return;
+  }
+
+  const user = await database.readUserByLogin(data.login);
+
+  // Guard against invalid or expired login
+  if (!user || user.login.expires < Date.now()) {
+    utilities.sendCode(
+      request,
+      response,
+      401,
+      '401InvalidOrExpired',
+      'The login provided is invalid or expired.',
+    );
+    return;
+  }
+
+  // Update favorite counts if necessary
+  if (data.action === 'add' && !user.favorites.includes(data.id)) {
+    await database.updateUserFavorites(data.login, data.id, true);
+    await database.updateFavoriteCount(data.id, 1);
+  } else if (user.favorites.includes(data.id)) {
+    await database.updateUserFavorites(data.login, data.id, false);
+    await database.updateFavoriteCount(data.id, -1);
+  }
+
+  response.statusCode = 204;
+  response.end();
+}
+
+module.exports = { addEntry, queryFavorites, editFavorites };
