@@ -96,7 +96,6 @@ function generateToken(username) {
   // Expire in 20 mins
   const generatedLogin = { key: '', expires: requestTime + 1200000 };
   const payload = JSON.stringify({ username, iat: requestTime });
-  // I forget what I was doing here... this line is likely from an outside resource.
   const signature = crypto.createHmac('sha256', process.env.SECRET).update(base64url(payload)).digest('hex');
   const token = `${base64url(payload)}.${base64url(signature)}`;
   generatedLogin.key = token;

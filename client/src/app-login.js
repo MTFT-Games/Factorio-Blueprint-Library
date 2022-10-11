@@ -46,7 +46,41 @@ template.innerHTML = `
 
 class AppLogin extends HTMLElement {
   logout = () => {
-    //todo
+    this.innerHTML = 'Login to save favorites across computers and upload your own blueprints.';
+
+    // Unset login data in storage
+    const localState = getLocal();
+    localState.login = null;
+    localStorage.setItem('nre5152-p1-settings', JSON.stringify(localState));
+
+    // Set login indicator
+    this.loggedInAccount.innerHTML = 'Log in';
+    this.loginBtn.classList.remove('is-primary');
+    this.loginBtn.classList.add('is-warning');
+    this.loginBtn.onclick = () => {
+      this.background.classList.remove('hidden');
+    };
+    // TODO: set hovers
+
+    // Lock any button only available when logged in
+    const btnToDisable = document.querySelector('#clear-server-btn') || document.querySelector('#upload-btn');
+    if (btnToDisable) {
+      btnToDisable.disabled = true;
+      btnToDisable.title = "Must be logged in";
+    }
+
+    // Unlock any button only available when logged out
+    const btnToEnable = document.querySelector('#clear-local-btn');
+    if (btnToEnable) {
+      btnToEnable.disabled = false;
+      btnToEnable.title = "";
+    }
+
+    // Refresh results
+    const refreshBtn = document.querySelector('#search-btn') || document.querySelector('#refresh-btn');
+    if (refreshBtn) {
+      refreshBtn.onclick();
+    }
   }
 
   postLogin = () => {
@@ -107,6 +141,8 @@ class AppLogin extends HTMLElement {
 
       if (response.ok) { // Server returned good login
         this.innerHTML = '<span class="has-text-primary">Success!</span>';
+        this.userField.classList.remove('is-danger');
+        this.passField.classList.remove('is-danger');
 
         // Set login data in storage
         const localState = getLocal();
@@ -127,16 +163,14 @@ class AppLogin extends HTMLElement {
         this.passField.classList.add('is-danger');
         this.userField.classList.add('is-danger');
         this.innerHTML = '<span class="has-text-danger">Invalid username or password.</span>';
-        this.loginSubmit.disabled = false;
-        this.userField.disabled = false;
-        this.passField.disabled = false;
       }
     } catch (e) {
       this.innerHTML = '<span class="has-text-danger">Error connecting to server.</span>';
-      this.loginSubmit.disabled = false;
-      this.userField.disabled = false;
-      this.passField.disabled = false;
     }
+    this.loginSubmit.disabled = false;
+    this.userField.disabled = false;
+    this.passField.disabled = false;
+    this.passField.value = '';
     this.loginSubmit.classList.remove('is-loading');
   }
 
