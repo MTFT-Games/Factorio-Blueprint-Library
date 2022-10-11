@@ -35,26 +35,6 @@ try {
 
 // TODO: Optimize await calls.
 
-async function queryFavorites(data, res) {
-  let favoriteIds;
-  if (data.login) {
-    const user = await database.readUserByLogin(data.login);
-    // auth
-    if (user && user.login.expires > Date.now()) {
-      favoriteIds = user.favorites;
-    } else {
-      res.statusCode = 401;
-      res.end('Invalid or expired login key');
-      return;
-    }
-  } else {
-    favoriteIds = data.ids;
-  }
-  const output = await database.readFavorites(favoriteIds, data.limit);
-  res.statusCode = 200;
-  res.end(JSON.stringify(output));
-}
-
 async function editFavorites(data, res) {
   const user = await database.readUserByLogin(data.login);
   // auth
@@ -115,7 +95,7 @@ const specialCases = {
   '/api/content/favorites': (req, res) => {
     utilities.parseBody(req, res, (request, response, data) => {
       if (data.limit && (data.login || data.ids)) {
-        queryFavorites(data, response);
+        content.queryFavorites(request, response, data);
       } else if (data.id && data.action && data.login) {
         editFavorites(data, response);
       } else {
