@@ -148,4 +148,50 @@ async function login(request, response, data) {
   response.end(JSON.stringify(token));
 }
 
-module.exports = { verify, login, generateToken };
+/**
+ * Creates a user with the given username, email, and password.
+ * @param {*} request The client request object.
+ * @param {*} response The server response object.
+ * @param {object} data POST body in JSON.
+ */
+async function createUser(request, response, data) {
+  // Guard against missing data
+  if (!data.username || !data.password || !data.email) {
+    utilities.sendCode(
+      request,
+      response,
+      400,
+      '400MissingFields',
+      'This endpoint requires username, password, and email fields.',
+    );
+    return;
+  }
+
+  // Guard against a user that already exists
+  if (await database.readUser(data.username)) {
+    utilities.sendCode(
+      request,
+      response,
+      409,
+      '409UserAlreadyExists',
+      'The user already exists and is therefore invalid for a new user.',
+    );
+    return;
+  }
+
+  // Hash the password for safe password storage
+  const passHash = bcrypt.hash(data.password, 10);
+
+  const generatedLogin = generateToken(data.username);
+
+  await database.createUser(data.username, await passHash, data.email, generatedLogin);
+
+  // Respond with the new login token
+  // TODO: change sendcode to sendjson and use that. change client to expect json.
+  response.writeHead(201, { 'Content-Type': 'application/json' });
+  response.end(JSON.stringify(generatedLogin));
+}
+
+module.exports = {
+  verify, login, generateToken, createUser,
+};

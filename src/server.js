@@ -2,7 +2,6 @@
 // #region Requires
 require('dotenv').config();
 const http = require('http');
-const bcrypt = require('bcryptjs');
 const fs = require('fs');
 const path = require('path').posix;
 const database = require('./database.js');
@@ -34,23 +33,6 @@ try {
 // #endregion
 
 // TODO: Optimize await calls.
-
-// Async function to confirm a free user and create a new account
-async function createUser(req, res, data) {
-  if (data.username && data.password && data.email) {
-    res.setHeader('Content-Type', 'application/json');
-    if (await database.readUser(data.username)) {
-      res.statusCode = 409;
-      res.end('Username taken');
-    } else {
-      const passHash = bcrypt.hash(data.password, 10);
-      const generatedLogin = login.generateToken(data.username);
-      await database.createUser(data.username, await passHash, data.email, generatedLogin);
-      res.statusCode = 200;
-      res.end(JSON.stringify(generatedLogin));
-    }
-  }
-}
 
 async function addEntry(req, res, data) {
   if (data.login && data.content) {
@@ -156,7 +138,7 @@ const specialCases = {
   '/': (request, response) => fileResponses.serveFile(request, response, `${webdir}/home.html`),
   '/api/': (request, response) => fileResponses.serveFile(request, response, `${webdir}/apidocs.html`),
   '/api/login/verify': (req, res) => utilities.parseBody(req, res, login.verify),
-  '/api/login/new': (req, res) => utilities.parseBody(req, res, createUser),
+  '/api/login/new': (req, res) => utilities.parseBody(req, res, login.createUser),
   '/api/login': (req, res) => utilities.parseBody(req, res, login.login),
   '/api/content/new': (req, res) => utilities.parseBody(req, res, addEntry),
   '/api/content/query': (req, res) => utilities.parseBody(req, res, contentQuery),
