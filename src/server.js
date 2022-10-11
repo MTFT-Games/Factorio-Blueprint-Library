@@ -3,19 +3,6 @@
 require('dotenv').config();
 const http = require('http');
 const crypto = require('crypto');
-// TODO: should probably make the email a setting and verify connection
-// TODO: email a known good mail on setup to ensure its working or use .verify
-// TODO: I guess set up better auth since google killed less secure apps in march
-// TODO: Move the creation of the transport to the rest of the connection setup.
-const nodemailer = require('nodemailer').createTransport({
-  service: 'gmail',
-  auth: {
-    type: 'OAuth2',
-    user: 'factoriolibrary@gmail.com',
-    serviceClient: '117043537712628403792',
-    privateKey: process.env.MAIL_AUTH,
-  },
-});
 const bcrypt = require('bcryptjs');
 const base64url = require('base64url');
 const fs = require('fs');
@@ -23,6 +10,7 @@ const path = require('path').posix;
 const database = require('./database.js');
 const utilities = require('./utilities.js');
 const fileResponses = require('./fileResponses.js');
+const login = require('./login.js');
 // #endregion
 
 const secret = process.env.GITHUB_SECRET;
@@ -62,35 +50,9 @@ function generateToken(data) {
   return generatedLogin;
 }
 
-// Async function to check if a username is valid and send an email to verify the email
-async function verify(req, res, data) {
-  res.setHeader('Content-Type', 'text/html');
-  if (await database.readUser(data.username)) {
-    res.statusCode = 409;
-    res.end('Username taken');
-  } else {
-    const code = Math.floor(Math.random() * 10000);
-    nodemailer.sendMail({
-      from: 'factoriolibrary@gmail.com',
-      to: data.email,
-      subject: 'Factorio Library account confirmation',
-      text: `A Factorio Library account is being created with this email as the recovery email. If this was you, your code is ${code}. If it wasn't you, please ignore and delete this email and no account will be created without the code.`,
-    }, (error) => {
-      if (error) {
-        console.error(`[ERROR]: Could not send email\n${error}`);
-        res.statusCode = 400;
-        res.end('Error sending confirmation email');
-      } else {
-        res.statusCode = 200;
-        res.end(`${code}`);
-      }
-    });
-  }
-}
-
 // Async function to confirm a free user and create a new account
 async function createUser(req, res, data) {
-  if (json.username && json.password && json.email) {
+  if (data.username && data.password && data.email) {
     res.setHeader('Content-Type', 'application/json');
     if (await database.readUser(data.username)) {
       res.statusCode = 409;
@@ -105,8 +67,8 @@ async function createUser(req, res, data) {
   }
 }
 
-async function login(req, res, data) {
-  if (json.username && json.password) {
+async function loginFunc(req, res, data) {
+  if (data.username && data.password) {
     res.setHeader('Content-Type', 'application/json');
     // Check username
     const user = await database.readUser(data.username);
@@ -134,7 +96,7 @@ async function login(req, res, data) {
 }
 
 async function addEntry(req, res, data) {
-  if (json.login && json.content) {
+  if (data.login && data.content) {
     res.setHeader('Content-Type', 'application/json');
     const user = await database.readUserByLogin(data.login);
     // auth
@@ -204,7 +166,7 @@ async function editFavorites(data, res) {
 }
 
 async function contentQuery(req, res, data) {
-  if (json.limit) {
+  if (data.limit) {
     const output = {};
 
     // Check login and get favorites
@@ -235,24 +197,23 @@ async function contentQuery(req, res, data) {
 // Struct to manage any cases that should be handled in a specific way
 const specialCases = {
   '/': (request, response) => fileResponses.serveFile(request, response, `${webdir}/home.html`),
-  '/api/': (request, response) =>
-    fileResponses.serveFile(request, response, `${webdir}/apidocs.html`),
-  '/api/login/verify': (req, res) => utilities.parseBody(req, res, verify),
+  '/api/': (request, response) => fileResponses.serveFile(request, response, `${webdir}/apidocs.html`),
+  '/api/login/verify': (req, res) => utilities.parseBody(req, res, login.verify),
   '/api/login/new': (req, res) => utilities.parseBody(req, res, createUser),
-  '/api/login': (req, res) => utilities.parseBody(req, res, login),
+  '/api/login': (req, res) => utilities.parseBody(req, res, loginFunc),
   '/api/content/new': (req, res) => utilities.parseBody(req, res, addEntry),
   '/api/content/query': (req, res) => utilities.parseBody(req, res, contentQuery),
-  '/content/favorites': (req, res) => {
-    utilities.parseBody(req, res, (req, res, data) => {
+  '/api/content/favorites': (req, res) => {
+    utilities.parseBody(req, res, (request, response, data) => {
       if (data.limit && (data.login || data.ids)) {
-        queryFavorites(json, res);
+        queryFavorites(data, response);
       } else if (data.id && data.action && data.login) {
-        editFavorites(json, res);
+        editFavorites(data, response);
       } else {
-        res.statusCode = 500;
-        res.end('malformed data');
+        response.statusCode = 500;
+        response.end('malformed data');
       }
-    })
+    });
   },
 };
 

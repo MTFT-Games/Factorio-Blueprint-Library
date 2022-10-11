@@ -152,10 +152,9 @@ function parseBody(request, response, callback) {
       );
       return;
     }
-    
+
     callback(request, response, json);
   });
-  return;
 }
 
 module.exports = {
