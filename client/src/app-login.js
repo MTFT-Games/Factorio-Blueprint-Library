@@ -30,18 +30,35 @@ template.innerHTML = `
 	<i id="user-icon" class="ml-1 fa-solid fa-user"></i>
 </button>
 <div class="popup hidden">
-		<factorio-panel-light>
-			<span slot="title">Login</span>
-			<div slot="content">
-				<p class="has-text-light is-size-6 has-text-weight-normal"><slot></slot></p>
-				<input type="text" class="input" id="username-in" placeholder="Username">
-				<input type="password" class="input" id="password-in" placeholder="Password">
-				<button id="login-submit" class="button is-primary">Login</button>
-				<button class="button" title="New accounts not available yet" disabled>Create
-					account</button>
-			</div>
-		</factorio-panel-light>
-	</div>
+  <factorio-panel-light id="login-pane">
+		<span slot="title">Login or <button id="create-btn" class="button is-warning">Create account</button></span>
+		<div slot="content">
+			<p class="has-text-light is-size-6 has-text-weight-normal"><slot></slot></p>
+			<input type="text" class="input" id="username-in" placeholder="Username">
+			<input type="password" class="input" id="password-in" placeholder="Password">
+			<button id="login-submit" class="button is-primary">Login</button>
+		</div>
+	</factorio-panel-light>
+	<factorio-panel-light id="create-pane" class="hidden">
+		<span slot="title">Create an account or <button id="back-login-btn" class="button is-warning">Login</button></span>
+		<div slot="content">
+			<p id="create-msg" class="has-text-light is-size-6 has-text-weight-normal">Create a new Factorio Blueprint Library account.</p>
+			<input type="text" class="input" id="create-username-in" placeholder="Username">
+			<input type="password" class="input" id="create-password-in" placeholder="Password">
+      <input type="text" class="input" id="create-email-in" placeholder="Email">
+			<button id="create-submit" class="button is-primary">Create account</button>
+		</div>
+	</factorio-panel-light>
+  <factorio-panel-light id="verify-pane" class="hidden">
+		<span slot="title">Verify your email</span>
+		<div slot="content">
+			<p id="verify-msg" class="has-text-light is-size-6 has-text-weight-normal">Verify your email to finish creating the account. A code has been sent to your email, please enter it below.</p>
+			<input type="text" class="input" id="verify-code-in" placeholder="Code">
+			<button id="verify-submit" class="button is-primary">Verify Email</button>
+      <button id="back-create-btn" class="button is-warning">Back to creation</button>
+		</div>
+	</factorio-panel-light>
+</div>
 `;
 
 class AppLogin extends HTMLElement {
@@ -133,7 +150,7 @@ class AppLogin extends HTMLElement {
 
     try {
       // Send login request
-      const response = await fetch("https://factorio-library.noahemke.com/api/login", {
+      const response = await fetch("/api/login", {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username: userIn, password: passIn })
@@ -174,6 +191,143 @@ class AppLogin extends HTMLElement {
     this.loginSubmit.classList.remove('is-loading');
   }
 
+  create = async () => {
+    // Get input values
+    const userIn = this.createUserField.value;
+    const passIn = this.createPassField.value;
+    const mailIn = this.createEmailField.value;
+
+    // Guard against empty inputs
+    if (!userIn) {
+      this.createMsg.innerHTML = '<span class="has-text-danger">Please enter a username.</span>';
+      this.createUserField.classList.add('is-danger');
+      return;
+    }
+    this.createUserField.classList.remove('is-danger');
+    if (!passIn) {
+      this.createMsg.innerHTML = '<span class="has-text-danger">Please enter a password.</span>';
+      this.createPassField.classList.add('is-danger');
+      return;
+    }
+    this.createPassField.classList.remove('is-danger');
+    if (!mailIn) {
+      this.createMsg.innerHTML = '<span class="has-text-danger">Please enter an email.</span>';
+      this.createEmailField.classList.add('is-danger');
+      return;
+    }
+    this.createEmailField.classList.remove('is-danger');
+
+    // Show loading
+    this.createSubmitBtn.classList.add('is-loading');
+    this.createSubmitBtn.disabled = true;
+    this.createUserField.disabled = true;
+    this.createPassField.disabled = true;
+    this.createEmailField.disabled = true;
+
+    try {
+      // Send login request
+      const response = await fetch("/api/login/verify", {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: userIn, email: mailIn })
+      });
+
+      if (response.ok) {
+        this.createMsg.innerHTML = 'Create a new Factorio Blueprint Library account.';
+        this.createUserField.classList.remove('is-danger');
+        this.createPassField.classList.remove('is-danger');
+        this.createEmailField.classList.remove('is-danger');
+
+        this.code = await response.text();
+
+        this.createPane.classList.add('hidden');
+        this.verifyPane.classList.remove('hidden');
+      } else {
+        const error = await response.json();
+
+        this.createMsg.innerHTML = `<span class="has-text-danger">${error.message}</span>`;
+      }
+    } catch (e) {
+      this.createMsg.innerHTML = '<span class="has-text-danger">Error connecting to server.</span>';
+      throw(e);
+    }
+
+    this.createSubmitBtn.classList.remove('is-loading');
+    this.createSubmitBtn.disabled = false;
+    this.createUserField.disabled = false;
+    this.createPassField.disabled = false;
+    this.createEmailField.disabled = false;
+  }
+
+  verify = async () => {
+    // Get input values
+    const codeIn = this.verifyCodeField.value;
+
+    // Guard against empty inputs
+    if (codeIn != this.code) {
+      this.verifyMsg.innerHTML = '<span class="has-text-danger">Please enter the correct code.</span>';
+      this.verifyCodeField.classList.add('is-danger');
+      return;
+    }
+    this.verifyCodeField.classList.remove('is-danger');
+
+
+    // Show loading
+    this.verifySubmitBtn.classList.add('is-loading');
+    this.verifySubmitBtn.disabled = true;
+    this.verifyCodeField.disabled = true;
+
+    try {
+      // Send login request
+      const response = await fetch("/api/login/new", {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: this.createUserField.value, password: this.createPassField.value, email: this.createEmailField.value })
+      });
+
+      if (response.ok) {
+        this.verifyMsg.innerHTML = 'Verify your email to finish creating the account. A code has been sent to your email, please enter it below.';
+        this.verifyCodeField.classList.remove('is-danger');
+
+        this.code = null;
+
+        // Set login data in storage
+        const localState = getLocal();
+        localState.user = this.createUserField.value;
+        localState.login = await response.json();
+        localStorage.setItem('nre5152-p1-settings', JSON.stringify(localState));
+
+        this.createPassField.value = '';
+        this.createUserField.value = '';
+        this.createEmailField.value = '';
+        this.verifyCodeField.value = '';
+
+        this.postLogin();
+
+        this.loginPane.classList.remove('hidden');
+        this.verifyPane.classList.add('hidden');
+
+        // Refresh results
+        const refreshBtn = document.querySelector('#search-btn') || document.querySelector('#refresh-btn');
+        if (refreshBtn) {
+          refreshBtn.onclick();
+        }
+
+        this.background.classList.add('hidden');
+      } else {
+        const error = await response.json();
+
+        this.verifyMsg.innerHTML = `<span class="has-text-danger">${error.message}</span>`;
+      }
+    } catch (e) {
+      this.createMsg.innerHTML = '<span class="has-text-danger">Error connecting to server.</span>';
+    }
+
+    this.verifySubmitBtn.classList.remove('is-loading');
+    this.verifySubmitBtn.disabled = false;
+    this.verifyCodeField.disabled = false;
+  }
+
   constructor() {
     super();
 
@@ -185,6 +339,20 @@ class AppLogin extends HTMLElement {
     this.passField = this.shadowRoot.querySelector('#password-in');
     this.loginSubmit = this.shadowRoot.querySelector('#login-submit');
     this.loginBtn = this.shadowRoot.querySelector('#login-btn');
+    this.createBtn = this.shadowRoot.querySelector('#create-btn');
+    this.backLoginBtn = this.shadowRoot.querySelector('#back-login-btn');
+    this.createMsg = this.shadowRoot.querySelector('#create-msg');
+    this.createUserField = this.shadowRoot.querySelector('#create-username-in');
+    this.createPassField = this.shadowRoot.querySelector('#create-password-in');
+    this.createEmailField = this.shadowRoot.querySelector('#create-email-in');
+    this.createSubmitBtn = this.shadowRoot.querySelector('#create-submit');
+    this.createPane = this.shadowRoot.querySelector('#create-pane');
+    this.verifyPane = this.shadowRoot.querySelector('#verify-pane');
+    this.loginPane = this.shadowRoot.querySelector('#login-pane');
+    this.verifyMsg = this.shadowRoot.querySelector('#verify-msg');
+    this.verifyCodeField = this.shadowRoot.querySelector('#verify-code-in');
+    this.verifySubmitBtn = this.shadowRoot.querySelector('#verify-submit');
+    this.backCreateBtn = this.shadowRoot.querySelector('#back-create-btn');
     this.loggedInAccount = this.shadowRoot.querySelector('#logged-in-account');
 
     // Hide login when clicking outside it
@@ -198,6 +366,27 @@ class AppLogin extends HTMLElement {
   connectedCallback() {
     // Login submit action
     this.loginSubmit.onclick = this.login;
+
+    this.createBtn.onclick = () => {
+      this.loginPane.classList.add('hidden');
+      this.createPane.classList.remove('hidden');
+    };
+
+    this.backLoginBtn.onclick = () => {
+      this.loginPane.classList.remove('hidden');
+      this.createPane.classList.add('hidden');
+    };
+
+    this.createSubmitBtn.onclick = this.create;
+    this.verifySubmitBtn.onclick = this.verify;
+
+    this.backCreateBtn.onclick = () => {
+      this.verifyMsg.innerHTML = 'Verify your email to finish creating the account. A code has been sent to your email, please enter it below.';
+      this.verifyCodeField.classList.remove('is-danger');
+      this.verifyCodeField.value = '';
+      this.createPane.classList.remove('hidden');
+      this.verifyPane.classList.add('hidden');
+    };
 
     // Check if the user is already logged in
     if (getLocal().login) {
