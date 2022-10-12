@@ -4,13 +4,12 @@
    TODO: Move the creation of the transport to the rest of the connection setup. */
 // #region Requires
 const nodemailer = require('nodemailer').createTransport({
-  service: 'gmail',
+  host: 'smtp.sendgrid.net',
+  port: 587,
   auth: {
-    type: 'OAuth2',
-    user: 'factoriolibrary@gmail.com',
-    serviceClient: '117043537712628403792',
-    privateKey: process.env.MAIL_AUTH,
-  },
+    user: 'apikey',
+    pass: process.env.MAIL_AUTH
+  }
 });
 // TODO: Do I need both of these?
 const bcrypt = require('bcryptjs');
@@ -63,7 +62,7 @@ async function verify(request, response, data) {
   // Generate and email verification code
   const code = Math.floor(Math.random() * 10000);
   nodemailer.sendMail({
-    from: 'factoriolibrary@gmail.com',
+    from: 'factorio-library@noahemke.com',
     to: data.email,
     subject: 'Factorio Library account confirmation',
     text: `A Factorio Library account is being created with this email as the recovery email. If this was you, your code is ${code}. If it wasn't you, please ignore and delete this email and no account will be normally created without the code.`,
